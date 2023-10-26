@@ -1,0 +1,12 @@
+version: '3'
+services:
+  shortvideo-mysql:
+    container_name: shortvideo-mysql-dev
+    image: mysql:8.0.34
+    restart: always
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: shortvideo
+      MYSQL_ROOT_PASSWORD: password
+      # MYSQL_ROOT_HOST: "%"
