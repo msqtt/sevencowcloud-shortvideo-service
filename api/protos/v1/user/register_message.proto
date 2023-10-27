@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package user;
+option go_package=".;pb_usr";
+
+message RegisterUserRequest {
+
+}
+
+
+message RegisterUserResponse {
+
+}

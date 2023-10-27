@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package user;
+option go_package=".;pb_usr";
+
+import "user/login_message.proto";
+import "user/register_message.proto";
+
+service AuthService {
+	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {}
+	rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {}
+}

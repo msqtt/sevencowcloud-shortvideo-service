@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package user;
+option go_package=".;pb_usr";
+
+import "user/user.proto";
+
+message LoginUserRequest {
+	string email = 1;
+	string password = 2;
+}
+
+message LoginUserResponse {
+	string token = 1;
+	User user = 2;
+}
