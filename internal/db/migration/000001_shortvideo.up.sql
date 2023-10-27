@@ -1,21 +1,21 @@
 CREATE TABLE `users` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `nickname` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `salt` int NOT NULL COMMENT '哈希加盐密码',
+  `password` char(60) NOT NULL COMMENT '哈希加盐密码',
   `profile_id` bigint NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
   `is_deleted` tinyint NOT NULL COMMENT '0 表示否 1 表示是'
 );
 
 CREATE TABLE `profiles` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `real_name` varchar(255),
   `mood` varchar(255),
   `gender` ENUM ('male', 'female', 'unknown') COMMENT '性别：男、女、未知',
-  `brithday` date,
-  `introduction` varchar(255)
+  `birth_date` date,
+  `introduction` varchar(255),
+  `updated_at` timestamp NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE `follows` (
@@ -25,7 +25,7 @@ CREATE TABLE `follows` (
 );
 
 CREATE TABLE `comments` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `comment_id` bigint NOT NULL COMMENT '为空表示属于视频的一级评论，不为空表示为二级评论，最多允许三极评论',
   `user_id` bigint NOT NULL,
   `post_id` bigint NOT NULL,
@@ -33,20 +33,20 @@ CREATE TABLE `comments` (
 );
 
 CREATE TABLE `likes` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `post_id` bigint NOT NULL,
   `comment_id` bigint COMMENT '用于标记点赞的是评论还是视频'
 );
 
 CREATE TABLE `shares` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `post_id` bigint NOT NULL
 );
 
 CREATE TABLE `posts` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `title` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `user_id` bigint NOT NULL,
@@ -57,15 +57,15 @@ CREATE TABLE `posts` (
   `created_at` timestamp NOT NULL
 );
 
-CREATE TABLE `user_collect_folders` (
-  `id` bigint PRIMARY KEY NOT NULL,
+CREATE TABLE `user_collect_folder` (
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `name` varchar(255) NOT NULL,
   `description` varchar(255)
 );
 
 CREATE TABLE `collections` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `folder_id` bigint NOT NULL,
   `post_id` bigint NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now())
@@ -78,20 +78,20 @@ CREATE TABLE `post_tag` (
 );
 
 CREATE TABLE `user_upload` (
-  `id` bigint PRIMARY KEY NOT NULL,
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `user_id` bigint NOT NULL,
   `video_id` bigint NOT NULL,
   `is_deleted` tinyint NOT NULL COMMENT '0 表示否 1 表示是'
 );
 
-CREATE TABLE `video` (
-  `id` bigint PRIMARY KEY NOT NULL,
+CREATE TABLE `videos` (
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `content_hash` char NOT NULL,
   `updated_at` timestamp NOT NULL
 );
 
 CREATE TABLE `video_class` (
-  `id` int PRIMARY KEY NOT NULL,
+  `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `is_enabled` tinyint NOT NULL COMMENT '0 表示否 1 表示是'
@@ -121,13 +121,13 @@ ALTER TABLE `shares` ADD FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`);
 
 ALTER TABLE `posts` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `posts` ADD FOREIGN KEY (`video_id`) REFERENCES `video` (`id`);
+ALTER TABLE `posts` ADD FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`);
 
 ALTER TABLE `posts` ADD FOREIGN KEY (`video_class_id`) REFERENCES `video_class` (`id`);
 
-ALTER TABLE `user_collect_folders` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `user_collect_folder` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `collections` ADD FOREIGN KEY (`folder_id`) REFERENCES `user_collect_folders` (`id`);
+ALTER TABLE `collections` ADD FOREIGN KEY (`folder_id`) REFERENCES `user_collect_folder` (`id`);
 
 ALTER TABLE `collections` ADD FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`);
 
@@ -135,4 +135,4 @@ ALTER TABLE `post_tag` ADD FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`);
 
 ALTER TABLE `user_upload` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `user_upload` ADD FOREIGN KEY (`video_id`) REFERENCES `video` (`id`);
+ALTER TABLE `user_upload` ADD FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`);
