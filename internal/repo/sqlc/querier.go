@@ -10,12 +10,21 @@ import (
 )
 
 type Querier interface {
+	ActivateUser(ctx context.Context, id int64) error
+	AddActivation(ctx context.Context, arg AddActivationParams) (sql.Result, error)
 	AddProfile(ctx context.Context, arg AddProfileParams) (sql.Result, error)
 	AddUser(ctx context.Context, arg AddUserParams) (sql.Result, error)
+	DeleteActivation(ctx context.Context, id int64) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
+	GetActivationByID(ctx context.Context, id int64) (UserActivation, error)
+	GetActivationByUserIDAndCode(ctx context.Context, arg GetActivationByUserIDAndCodeParams) (UserActivation, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
-	GetUser(ctx context.Context, id int64) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByEmailActivated(ctx context.Context, email string) (User, error)
+	GetUserByEmailNotActivated(ctx context.Context, email string) (User, error)
+	GetUserByID(ctx context.Context, id int64) (User, error)
+	GetUserByNickName(ctx context.Context, nickname string) (User, error)
 	UpdateNickName(ctx context.Context, arg UpdateNickNameParams) (sql.Result, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (sql.Result, error)
 }

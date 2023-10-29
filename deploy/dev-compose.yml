@@ -9,4 +9,6 @@ services:
     environment:
       MYSQL_DATABASE: shortvideo
       MYSQL_ROOT_PASSWORD: password
-      # MYSQL_ROOT_HOST: "%"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - ./my.cnf:/etc/my.cnf

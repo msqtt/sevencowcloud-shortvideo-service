@@ -5,7 +5,16 @@ CREATE TABLE `users` (
   `password` char(60) NOT NULL COMMENT '哈希加盐密码',
   `profile_id` bigint NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
-  `is_deleted` tinyint NOT NULL COMMENT '0 表示否 1 表示是'
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '账户是否被删除, 0 表示否 1 表示是',
+  `is_activated` tinyint NOT NULL DEFAULT 0 COMMENT '账户是否激活, 0 表示否 1 表示是'
+);
+
+CREATE TABLE `user_activation` (
+  `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL,
+  `activate_code` char(8) NOT NULL,
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '激活码是否被删除, 0 表示否 1 表示是',
+  `expired_at` timestamp NOT NULL
 );
 
 CREATE TABLE `profiles` (
@@ -21,7 +30,8 @@ CREATE TABLE `profiles` (
 CREATE TABLE `follows` (
   `following_user_id` bigint NOT NULL,
   `followed_user_id` bigint NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT (now())
+  `created_at` timestamp NOT NULL DEFAULT (now()),
+  PRIMARY KEY (`followed_user_id`, `following_user_id`)
 );
 
 CREATE TABLE `comments` (
@@ -97,7 +107,11 @@ CREATE TABLE `video_class` (
   `is_enabled` tinyint NOT NULL COMMENT '0 表示否 1 表示是'
 );
 
+CREATE INDEX `users_index_0` ON `users` (`email`);
+
 ALTER TABLE `users` ADD FOREIGN KEY (`profile_id`) REFERENCES `profiles` (`id`);
+
+ALTER TABLE `user_activation` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `follows` ADD FOREIGN KEY (`following_user_id`) REFERENCES `users` (`id`);
 

@@ -1,12 +1,30 @@
 syntax = "proto3";
 
-package user;
-option go_package=".;pb_usr";
+package user.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user;pb_usr";
 
+import "google/api/annotations.proto";
 import "user/login_message.proto";
 import "user/register_message.proto";
+import "user/activate_message.proto";
 
 service AuthService {
-	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {}
-	rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {}
+	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
+		option (google.api.http) = {
+			post: "/v1/auth/login"
+      body: "*"
+		};
+	}
+	rpc RegisterUser(RegisterUserRequest) returns (RegisterUserResponse) {
+		option (google.api.http) = {
+			post: "/v1/auth/register"
+      body: "*"
+		};
+	}
+	rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse) {
+		option (google.api.http) = {
+			post: "/v1/auth/activate"
+      body: "*"
+		};
+	}
 }

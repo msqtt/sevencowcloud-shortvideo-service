@@ -64,8 +64,8 @@ func testCreateUser(t *testing.T) User {
 	i, err2 := res.LastInsertId()
 	require.NoError(t, err2)
 	require.NotZero(t, i)
-	
-	u, err3 := testQueries.GetUser(context.Background(), i)
+
+	u, err3 := testQueries.GetUserByID(context.Background(), i)
 	require.NoError(t, err3)
 	require.NotEmpty(t, u)
 	require.Equal(t, u.Nickname, params.Nickname)

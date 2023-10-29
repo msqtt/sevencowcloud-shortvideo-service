@@ -1,16 +1,13 @@
 syntax = "proto3";
 
-package user;
-option go_package=".;pb_usr";
+package user.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user;pb_usr";
 
 import "profile/profile.proto";
-import "google/protobuf/timestamp.proto";
 
 message User {
 	string nickname = 1;
 	string email = 2;
-	string password = 3;
-	profile.Profile profile = 4;
-	google.protobuf.Timestamp created_at = 5;
-	bool is_deleted = 6;
+	profile.v1.Profile profile = 3;
+	int64 created_at = 4;
 }

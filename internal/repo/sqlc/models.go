@@ -128,8 +128,19 @@ type User struct {
 	Password  string    `json:"password"`
 	ProfileID int64     `json:"profile_id"`
 	CreatedAt time.Time `json:"created_at"`
-	// 0 表示否 1 表示是
+	// 账户是否被删除, 0 表示否 1 表示是
 	IsDeleted int32 `json:"is_deleted"`
+	// 账户是否激活, 0 表示否 1 表示是
+	IsActivated int32 `json:"is_activated"`
+}
+
+type UserActivation struct {
+	ID           int64  `json:"id"`
+	UserID       int64  `json:"user_id"`
+	ActivateCode string `json:"activate_code"`
+	// 激活码是否被删除, 0 表示否 1 表示是
+	IsDeleted int32     `json:"is_deleted"`
+	ExpiredAt time.Time `json:"expired_at"`
 }
 
 type UserCollectFolder struct {

@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS user_activation;
 DROP TABLE IF EXISTS user_upload;
 DROP TABLE IF EXISTS post_tag;
 DROP TABLE IF EXISTS collections;

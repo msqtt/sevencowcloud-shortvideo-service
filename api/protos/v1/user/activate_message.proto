@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package user.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user;pb_usr";
+
+import "user/user.proto";
+
+message ActivateUserRequest {
+	string email = 1;
+	string activate_code = 2;
+}
+
+
+message ActivateUserResponse {
+	User user = 1;
+}
