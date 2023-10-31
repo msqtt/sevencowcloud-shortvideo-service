@@ -48,6 +48,50 @@
         ]
       }
     },
+    "/v1/auth/email/{userId}": {
+      "post": {
+        "operationId": "AuthService_SendActivateEmail",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SendActivateEmailResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
     "/v1/auth/login": {
       "post": {
         "operationId": "AuthService_LoginUser",
@@ -202,6 +246,9 @@
         "introduction": {
           "type": "string"
         },
+        "avatarLink": {
+          "type": "string"
+        },
         "updatedAt": {
           "type": "string",
           "format": "int64"
@@ -230,9 +277,22 @@
         }
       }
     },
+    "v1SendActivateEmailResponse": {
+      "type": "object",
+      "properties": {
+        "todayLeftTimes": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
     "v1User": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
         "nickname": {
           "type": "string"
         },

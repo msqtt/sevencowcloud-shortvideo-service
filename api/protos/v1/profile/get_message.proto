@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package profile.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile;pb_prf";
+
+import "profile/profile.proto";
+
+message GetProfileRequest {
+	int64 user_id = 1;
+}
+
+message GetProfileResponse {
+	Profile profile = 1;
+}

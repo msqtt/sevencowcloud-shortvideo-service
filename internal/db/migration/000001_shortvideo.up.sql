@@ -24,6 +24,7 @@ CREATE TABLE `profiles` (
   `gender` ENUM ('male', 'female', 'unknown') COMMENT '性别：男、女、未知',
   `birth_date` date,
   `introduction` varchar(255),
+  `avatar_link` varchar(255) COMMENT '存放头像文件的相对路径',
   `updated_at` timestamp NOT NULL DEFAULT (now())
 );
 

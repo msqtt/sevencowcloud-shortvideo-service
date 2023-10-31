@@ -6,8 +6,9 @@ option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/u
 import "profile/profile.proto";
 
 message User {
-	string nickname = 1;
-	string email = 2;
-	profile.v1.Profile profile = 3;
-	int64 created_at = 4;
+  int64 id = 1;
+	string nickname = 2;
+	string email = 3;
+	profile.v1.Profile profile = 4;
+	int64 created_at = 5;
 }

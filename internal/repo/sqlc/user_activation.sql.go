@@ -94,3 +94,16 @@ func (q *Queries) GetActivationByUserIDAndCode(ctx context.Context, arg GetActiv
 	)
 	return i, err
 }
+
+const todayActiationCount = `-- name: TodayActiationCount :one
+SELECT COUNT(id) FROM user_activation 
+WHERE user_id = ?
+AND TO_DAYS(expired_at) = TO_DAYS(NOW())
+`
+
+func (q *Queries) TodayActiationCount(ctx context.Context, userID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, todayActiationCount, userID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}

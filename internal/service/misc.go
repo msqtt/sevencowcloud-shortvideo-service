@@ -9,6 +9,7 @@ import (
 // convert database User type to protobuf User one.
 func db2pbUser(u db.User, prof *db.Profile) *pb_usr.User {
 	return &pb_usr.User{
+		Id: u.ID,
 		Nickname:  u.Nickname,
 		Email:     u.Email,
 		Profile:   db2pbProfile(prof),
@@ -32,6 +33,7 @@ func db2pbProfile(prof *db.Profile) *pb_prf.Profile {
 		Gender:       string(prof.Gender.ProfilesGender),
 		BirthDate:    birthdate,
 		Introduction: prof.Introduction.String,
+		AvatarLink:   prof.AvatarLink.String,
 		UpdatedAt:    updateat,
 	}
 }

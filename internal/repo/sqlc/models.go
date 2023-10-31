@@ -111,7 +111,9 @@ type Profile struct {
 	Gender       NullProfilesGender `json:"gender"`
 	BirthDate    sql.NullTime       `json:"birth_date"`
 	Introduction sql.NullString     `json:"introduction"`
-	UpdatedAt    time.Time          `json:"updated_at"`
+	// 存放头像文件的相对路径
+	AvatarLink sql.NullString `json:"avatar_link"`
+	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
 type Share struct {

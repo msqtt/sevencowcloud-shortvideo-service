@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/grpc/peer"
 )
 
 const (
@@ -31,13 +31,13 @@ func extractMetadata(ctx context.Context) *Metadata {
 		}
 
 		if clientIPs := md.Get(xForwardedForHeader); len(clientIPs) > 0 {
-			mtdt.ClientIP = clientIPs[0]
+			mtdt.ClientIP = strings.Split(clientIPs[0], ",")[0]
 		}
 	}
 
-	if p, ok := peer.FromContext(ctx); ok {
-		mtdt.ClientIP = p.Addr.String()
-	}
+	// if p, ok := peer.FromContext(ctx); ok {
+	// 	mtdt.ClientIP = p.Addr.String()
+	// }
 
 	return mtdt
 }

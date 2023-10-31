@@ -12,8 +12,8 @@ import (
 
 const addProfile = `-- name: AddProfile :execresult
 INSERT INTO profiles (
-	real_name, mood, gender, birth_date, introduction
-) VALUES ( ?, ?, ?, ?, ? )
+	real_name, mood, gender, birth_date, introduction, avatar_link
+) VALUES ( ?, ?, ?, ?, ?, ?)
 `
 
 type AddProfileParams struct {
@@ -22,6 +22,7 @@ type AddProfileParams struct {
 	Gender       NullProfilesGender `json:"gender"`
 	BirthDate    sql.NullTime       `json:"birth_date"`
 	Introduction sql.NullString     `json:"introduction"`
+	AvatarLink   sql.NullString     `json:"avatar_link"`
 }
 
 func (q *Queries) AddProfile(ctx context.Context, arg AddProfileParams) (sql.Result, error) {
@@ -31,6 +32,7 @@ func (q *Queries) AddProfile(ctx context.Context, arg AddProfileParams) (sql.Res
 		arg.Gender,
 		arg.BirthDate,
 		arg.Introduction,
+		arg.AvatarLink,
 	)
 }
 
@@ -45,7 +47,7 @@ func (q *Queries) DeleteProfile(ctx context.Context, id int64) error {
 }
 
 const getProfile = `-- name: GetProfile :one
-SELECT id, real_name, mood, gender, birth_date, introduction, updated_at FROM profiles
+SELECT id, real_name, mood, gender, birth_date, introduction, avatar_link, updated_at FROM profiles
 WHERE id = ?
 `
 
@@ -59,12 +61,29 @@ func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
 		&i.Gender,
 		&i.BirthDate,
 		&i.Introduction,
+		&i.AvatarLink,
 		&i.UpdatedAt,
 	)
 	return i, err
 }
 
-const updateProfile = `-- name: UpdateProfile :execresult
+const updateAvatar = `-- name: UpdateAvatar :exec
+UPDATE profiles
+	SET avatar_link = ?
+	WHERE id = ?
+`
+
+type UpdateAvatarParams struct {
+	AvatarLink sql.NullString `json:"avatar_link"`
+	ID         int64          `json:"id"`
+}
+
+func (q *Queries) UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error {
+	_, err := q.db.ExecContext(ctx, updateAvatar, arg.AvatarLink, arg.ID)
+	return err
+}
+
+const updateProfile = `-- name: UpdateProfile :exec
 UPDATE profiles
 	SET real_name = ?,
 			mood = ?,
@@ -72,7 +91,7 @@ UPDATE profiles
 			birth_date = ?,
 			introduction = ?,
 			updated_at = now()
-	WHERE condition
+	WHERE id = ?
 `
 
 type UpdateProfileParams struct {
@@ -81,14 +100,17 @@ type UpdateProfileParams struct {
 	Gender       NullProfilesGender `json:"gender"`
 	BirthDate    sql.NullTime       `json:"birth_date"`
 	Introduction sql.NullString     `json:"introduction"`
+	ID           int64              `json:"id"`
 }
 
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (sql.Result, error) {
-	return q.db.ExecContext(ctx, updateProfile,
+func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) error {
+	_, err := q.db.ExecContext(ctx, updateProfile,
 		arg.RealName,
 		arg.Mood,
 		arg.Gender,
 		arg.BirthDate,
 		arg.Introduction,
+		arg.ID,
 	)
+	return err
 }

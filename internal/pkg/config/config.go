@@ -19,6 +19,13 @@ type Config struct {
 	SmtpPort          int           `mapstructure:"SMTP_PORT"`
 	SmtpAddr          string        `mapstructure:"SMTP_ADDR"`
 	SmtpScrt          string        `mapstructure:"SMTP_SECRET"`
+	ActivateTimes     int           `mapstructure:"ACTIVATE_TIMES"`
+	KodoLink          string        `mapstructure:"KODO_LINK"`
+	KodoHttps         bool          `mapstructure:"KODO_HTTPS"`
+	KodoCDN           bool          `mapstructure:"KODO_CDN"`
+	KodoBucket        string        `mapstructure:"KODO_BUCKET"`
+	QiniuAK           string        `mapstructure:"QINIU_AK"`
+	QiniuSK           string        `mapstructure:"QINIU_SK"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

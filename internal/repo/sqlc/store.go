@@ -60,7 +60,9 @@ func (store *SQLStore) CreateUserTx(ctx context.Context, param CreateUserTxParam
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
 		// add a profile
-		r, err := q.AddProfile(ctx, AddProfileParams{})
+		r, err := q.AddProfile(ctx, AddProfileParams{
+			AvatarLink: sql.NullString{String: "img/avatar/default.png", Valid: true},
+		})
 		if err != nil {
 			return err
 		}

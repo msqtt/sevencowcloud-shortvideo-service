@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package profile.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile;pb_prf";
+
+import "profile/profile.proto";
+
+message UpdateProfileRequest {
+	int64 user_id = 1;
+	string real_name = 2;
+	string mood = 3;
+	enum Gender {
+		unknown = 0;
+		male = 1;
+		female = 2;
+	}
+	Gender gender = 4;
+  int64 birth_date = 5;
+	string introduction = 6;
+}
+
+message UpdateProfileResponse {
+	Profile profile = 1;
+}

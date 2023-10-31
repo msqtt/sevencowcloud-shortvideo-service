@@ -25,6 +25,7 @@ type AuthServiceClient interface {
 	LoginUser(ctx context.Context, in *LoginUserRequest, opts ...grpc.CallOption) (*LoginUserResponse, error)
 	RegisterUser(ctx context.Context, in *RegisterUserRequest, opts ...grpc.CallOption) (*RegisterUserResponse, error)
 	ActivateUser(ctx context.Context, in *ActivateUserRequest, opts ...grpc.CallOption) (*ActivateUserResponse, error)
+	SendActivateEmail(ctx context.Context, in *SendActivateEmailRequest, opts ...grpc.CallOption) (*SendActivateEmailResponse, error)
 }
 
 type authServiceClient struct {
@@ -62,6 +63,15 @@ func (c *authServiceClient) ActivateUser(ctx context.Context, in *ActivateUserRe
 	return out, nil
 }
 
+func (c *authServiceClient) SendActivateEmail(ctx context.Context, in *SendActivateEmailRequest, opts ...grpc.CallOption) (*SendActivateEmailResponse, error) {
+	out := new(SendActivateEmailResponse)
+	err := c.cc.Invoke(ctx, "/user.v1.AuthService/SendActivateEmail", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type AuthServiceServer interface {
 	LoginUser(context.Context, *LoginUserRequest) (*LoginUserResponse, error)
 	RegisterUser(context.Context, *RegisterUserRequest) (*RegisterUserResponse, error)
 	ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error)
+	SendActivateEmail(context.Context, *SendActivateEmailRequest) (*SendActivateEmailResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedAuthServiceServer) RegisterUser(context.Context, *RegisterUse
 }
 func (UnimplementedAuthServiceServer) ActivateUser(context.Context, *ActivateUserRequest) (*ActivateUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActivateUser not implemented")
+}
+func (UnimplementedAuthServiceServer) SendActivateEmail(context.Context, *SendActivateEmailRequest) (*SendActivateEmailResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendActivateEmail not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 
@@ -152,6 +166,24 @@ func _AuthService_ActivateUser_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SendActivateEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendActivateEmailRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SendActivateEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/user.v1.AuthService/SendActivateEmail",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SendActivateEmail(ctx, req.(*SendActivateEmailRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActivateUser",
 			Handler:    _AuthService_ActivateUser_Handler,
+		},
+		{
+			MethodName: "SendActivateEmail",
+			Handler:    _AuthService_SendActivateEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

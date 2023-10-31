@@ -25,8 +25,10 @@ type Querier interface {
 	GetUserByEmailNotActivated(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByNickName(ctx context.Context, nickname string) (User, error)
+	TodayActiationCount(ctx context.Context, userID int64) (int64, error)
+	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error
 	UpdateNickName(ctx context.Context, arg UpdateNickNameParams) (sql.Result, error)
-	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (sql.Result, error)
+	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error
 }
 
 var _ Querier = (*Queries)(nil)

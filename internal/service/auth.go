@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
+	"path/filepath"
 	"time"
 
 	pb_usr "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user"
@@ -26,6 +26,67 @@ type AuthServer struct {
 	mail   *mail.MailSender
 }
 
+// SendActivateEmail implements pb_usr.AuthServiceServer.
+func (as *AuthServer) SendActivateEmail(ctx context.Context, req *pb_usr.SendActivateEmailRequest) (
+	*pb_usr.SendActivateEmailResponse, error) {
+	id := req.GetUserId()
+	email := req.GetEmail()
+	
+	u, err := as.store.GetUserByEmailNotActivated(ctx, email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, status.Errorf(codes.NotFound, "no such user needs to be activated")
+		}
+		log.Println(err)
+		return nil, status.Errorf(codes.Internal, "failed to find user")
+	}
+
+	if id != u.ID {
+		return nil, status.Errorf(codes.InvalidArgument, "id and email do not match")
+	}
+
+	// check activate left times
+	cnt, err2 := as.store.TodayActiationCount(ctx, id)
+	if err2 != nil {
+		log.Println(err2)
+		return nil, status.Errorf(codes.Internal, "failed to mount today activate times")
+	}
+	left := int32(as.config.ActivateTimes) - int32(cnt)
+	if left <= 0 {
+		return nil, status.Errorf(codes.ResourceExhausted, "the user has been reached %d times"+
+			" limit of sending activate emails", cnt)
+	}
+	left --
+
+	// email server
+	m := extractMetadata(ctx)
+	code := sample.RandomStr(8)
+
+	// add activation
+	args := db.AddActivationParams{
+		UserID:       u.ID,
+		ActivateCode: code,
+		ExpiredAt:    time.Now().Add(10 * time.Minute),
+	}
+	_, err4 := as.store.AddActivation(ctx, args)
+	if err4 != nil {
+		log.Println(err4)
+		return nil, status.Errorf(codes.Internal, "failed to create activation")
+	}
+
+	// open a goroutine to send an email
+	go func() {
+		err4 = as.mail.SendActivateEmail(email, u.Nickname, code, m.ClientIP)
+		if err4 != nil {
+			log.Println(err4)
+		}
+	}()
+
+	return &pb_usr.SendActivateEmailResponse{
+		TodayLeftTimes: left,
+	}, nil
+}
+
 // ActivateUser implements pb_usr.AuthServiceServer.
 func (as *AuthServer) ActivateUser(ctx context.Context, req *pb_usr.ActivateUserRequest) (
 	*pb_usr.ActivateUserResponse, error) {
@@ -41,7 +102,7 @@ func (as *AuthServer) ActivateUser(ctx context.Context, req *pb_usr.ActivateUser
 		log.Println(err)
 		return nil, status.Errorf(codes.Internal, "failed to find activated user")
 	}
-	
+
 	u, err := as.store.GetUserByEmailNotActivated(ctx, email)
 	if err != err {
 		if err == sql.ErrNoRows {
@@ -54,9 +115,9 @@ func (as *AuthServer) ActivateUser(ctx context.Context, req *pb_usr.ActivateUser
 	// find activate code.
 	activation, err := as.store.GetActivationByUserIDAndCode(ctx,
 		db.GetActivationByUserIDAndCodeParams{
-		UserID: u.ID,
-		ActivateCode: code,
-	})
+			UserID:       u.ID,
+			ActivateCode: code,
+		})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, status.Errorf(codes.InvalidArgument, "activate code not found")
@@ -83,14 +144,16 @@ func (as *AuthServer) ActivateUser(ctx context.Context, req *pb_usr.ActivateUser
 		log.Println(err)
 		return nil, status.Errorf(codes.Internal, "failed to activate user")
 	}
-	
+
 	// whether delete action successes or not, return ok
 	as.store.DeleteActivation(ctx, activation.ID)
 
-	aur := &pb_usr.ActivateUserResponse{User: db2pbUser(u, &db.Profile{})}
+	link := filepath.Join(as.config.KodoLink, "img/avatar/default.png")
+	aur := &pb_usr.ActivateUserResponse{User: db2pbUser(u, &db.Profile{
+		AvatarLink: sql.NullString{String: link, Valid: true},
+		})}
 	return aur, nil
 }
-
 
 // LoginUser implements pb_usr.AuthServiceServer.
 func (as *AuthServer) LoginUser(ctx context.Context, req *pb_usr.LoginUserRequest) (
@@ -112,7 +175,7 @@ func (as *AuthServer) LoginUser(ctx context.Context, req *pb_usr.LoginUserReques
 		return nil, status.Errorf(codes.Unauthenticated, "incorrect password")
 	}
 	// create an access token.
-	token, _, err3 := as.token.CreateToken(u.Nickname, as.config.AccessDuration)
+	token, _, err3 := as.token.CreateToken(u.ID, u.Nickname, as.config.AccessDuration)
 	if err3 != nil {
 		log.Println(err3)
 		return nil, status.Errorf(codes.Internal, "cannot access token")
@@ -123,8 +186,9 @@ func (as *AuthServer) LoginUser(ctx context.Context, req *pb_usr.LoginUserReques
 		log.Println(err4)
 		return nil, status.Errorf(codes.Internal, "failed to find profile")
 	}
-
-	lur := &pb_usr.LoginUserResponse{Token: token, User: db2pbUser(u, &p)}
+	u2 := db2pbUser(u, &p)
+	u2.Profile.AvatarLink = filepath.Join(as.config.KodoLink, u2.Profile.AvatarLink)
+	lur := &pb_usr.LoginUserResponse{Token: token, User: u2}
 	return lur, nil
 }
 
@@ -168,48 +232,23 @@ func (as *AuthServer) RegisterUser(ctx context.Context, req *pb_usr.RegisterUser
 		log.Println(err3)
 		return nil, status.Errorf(codes.Internal, "failed to create user")
 	}
-	// email server
-	m := extractMetadata(ctx)
-	code := sample.RandomStr(8)
 
-	// add activation
-	args := db.AddActivationParams{
-		UserID:       cutr.User.ID,
-		ActivateCode: code,
-		ExpiredAt:    time.Now().Add(10 * time.Minute),
-	}
-	_, err4 := as.store.AddActivation(ctx, args)
-	if err4 != nil {
-		log.Println(err4)
-		return nil, status.Errorf(codes.Internal, "failed to create activation")
-	}
-
-	// send an email
-	go func() {
-		err4 = as.mail.SendActivateEmail(email, nickname, code, m.ClientIP)
-		if err4 != nil {
-			log.Println(err4)
-		}
-	}()
-
-	rur := &pb_usr.RegisterUserResponse{User: db2pbUser(cutr.User,
-		&db.Profile{UpdatedAt: time.Now()})}
+	link := filepath.Join(as.config.KodoLink, "img/avatar/default.png")
+	u := db2pbUser(cutr.User, &db.Profile{UpdatedAt: time.Now(), AvatarLink: sql.NullString{
+		String: link, Valid: true}})
+	rur := &pb_usr.RegisterUserResponse{User: u}
 	return rur, nil
 }
 
 var _ pb_usr.AuthServiceServer = (*AuthServer)(nil)
 
 // NewAuthServer creates an auth server then return it and an error, if any.
-func NewAuthServer(store db.Store, conf config.Config) (*AuthServer, error) {
-	pm, err := token.NewPasetoMaker([]byte(conf.TokenSymmetricKey))
-	if err != nil {
-		return nil, fmt.Errorf("cannot new auth server: %w", err)
-	}
+func NewAuthServer(store db.Store, conf config.Config, token token.TokenMaker) *AuthServer {
 	ms := mail.NewMailSender(conf.SmtpHost, conf.SmtpAddr, conf.SmtpScrt, conf.SmtpPort)
 	return &AuthServer{
 		config: conf,
 		store:  store,
-		token:  pm,
+		token:  token,
 		mail:   ms,
-	}, nil
+	}
 }

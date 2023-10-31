@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package profile.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile;pb_prf";
+
+import "google/api/annotations.proto";
+import "profile/get_message.proto";
+import "profile/update_message.proto";
+
+service ProfileService {
+	rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
+		option (google.api.http) = {
+			get: "/v1/profile/{user_id}"
+		};
+	}
+	rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse) {
+		option (google.api.http) = {
+			put: "/v1/profile/{user_id}"
+      body: "*"
+		};
+	}
+}
