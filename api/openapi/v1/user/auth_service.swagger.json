@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/v1/auth/activate": {
+    "/v1/auth/captcha": {
       "post": {
-        "operationId": "AuthService_ActivateUser",
+        "operationId": "AuthService_SendCaptcha",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ActivateUserResponse"
+              "$ref": "#/definitions/v1SendCaptchaResponse"
             }
           },
           "default": {
@@ -39,51 +39,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1ActivateUserRequest"
-            }
-          }
-        ],
-        "tags": [
-          "AuthService"
-        ]
-      }
-    },
-    "/v1/auth/email/{userId}": {
-      "post": {
-        "operationId": "AuthService_SendActivateEmail",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1SendActivateEmailResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/v1SendCaptchaRequest"
             }
           }
         ],
@@ -186,25 +142,6 @@
         }
       }
     },
-    "v1ActivateUserRequest": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "activateCode": {
-          "type": "string"
-        }
-      }
-    },
-    "v1ActivateUserResponse": {
-      "type": "object",
-      "properties": {
-        "user": {
-          "$ref": "#/definitions/v1User"
-        }
-      }
-    },
     "v1LoginUserRequest": {
       "type": "object",
       "properties": {
@@ -266,6 +203,9 @@
         },
         "nickname": {
           "type": "string"
+        },
+        "captcha": {
+          "type": "string"
         }
       }
     },
@@ -277,7 +217,15 @@
         }
       }
     },
-    "v1SendActivateEmailResponse": {
+    "v1SendCaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SendCaptchaResponse": {
       "type": "object",
       "properties": {
         "todayLeftTimes": {

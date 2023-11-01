@@ -9,12 +9,15 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	pb_fl "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/follow"
 	pb_prf "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile"
 	pb_usr "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user"
+	pb_vid "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/video"
 	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/pkg/config"
 	db "github.com/msqtt/sevencowcloud-shortvideo-service/internal/repo/sqlc"
 	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/service"
 	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/token"
+	"github.com/rs/cors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
@@ -42,13 +45,17 @@ func main() {
 		log.Fatal(err2)
 	}
 	// new service server
-	authServer := service.NewAuthServer(store, conf, pm)
-	profileServer := service.NewProfileServer(store, conf)
+	authServer := service.NewAuthServer(conf, pm, store)
+	profileServer := service.NewProfileServer(conf, store)
 	fileServer := service.NewFileService(conf, pm, store)
+	followServer := service.NewFollowServer(conf, pm, store)
+	videoServer := service.NewVideoServer(conf, pm, store)
 
 	// new service interceptor
 	ai := service.NewAuthInterceptor(conf, pm,
 		"/profile.v1.ProfileService/UpdateProfile",
+		"/follow.v1.FollowService/FollowUser",
+		"/follow.v1.FollowService/UnFollowUser",
 	)
 
 	// start listen server
@@ -61,7 +68,7 @@ func main() {
 		log.Fatal(err)
 	}
 	go func() {
-		log.Fatalln(runGRPCServer(authServer, profileServer, ai, false, listenGrpc))
+		log.Fatalln(runGRPCServer(authServer, profileServer, followServer, videoServer, ai, false, listenGrpc))
 	}()
 	// http gateway
 	log.Fatalln(runRESTServer(fileServer, false, listenREST, listenGrpc))
@@ -70,6 +77,8 @@ func main() {
 func runGRPCServer(
 	authServer pb_usr.AuthServiceServer,
 	profileServer pb_prf.ProfileServiceServer,
+	followServer pb_fl.FollowServiceServer,
+	videoServer pb_vid.VideoServiceServer,
 	authInerceptor *service.AuthInterceptor,
 	enableTLS bool,
 	listener net.Listener,
@@ -78,6 +87,8 @@ func runGRPCServer(
 	server := grpc.NewServer(grpc.UnaryInterceptor(authInerceptor.Unary()))
 	pb_usr.RegisterAuthServiceServer(server, authServer)
 	pb_prf.RegisterProfileServiceServer(server, profileServer)
+	pb_fl.RegisterFollowServiceServer(server, followServer)
+	pb_vid.RegisterVideoServiceServer(server, videoServer)
 
 	// for registering explore grpc api.
 	reflection.Register(server)
@@ -97,6 +108,15 @@ func runRESTServer(
 	if err2 != nil {
 		return err2
 	}
+	withCors := cors.New(cors.Options{
+		AllowOriginFunc:  func(origin string) bool { return true },
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"ACCEPT", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}).Handler(mux)
+
 	ctx, cf := context.WithCancel(context.Background())
 	defer cf()
 
@@ -115,11 +135,18 @@ func runRESTServer(
 	if err != nil {
 		return err
 	}
+	err = pb_fl.RegisterFollowServiceHandler(ctx, mux, conn)
+	if err != nil {
+		return err
+	}
+	err = pb_vid.RegisterVideoServiceHandler(ctx, mux, conn)
+	if err != nil {
+		return err
+	}
 
 	log.Printf("Start REST server at %s, TLS = %v", restListener.Addr().String(), enableTLS)
 	if enableTLS {
-		return http.ServeTLS(restListener, mux, "", "")
+		return http.ServeTLS(restListener, withCors, "", "")
 	}
-	return http.Serve(restListener, mux)
+	return http.Serve(restListener, withCors)
 }
-

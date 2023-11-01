@@ -46,7 +46,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int64) error {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, nickname, email, password, profile_id, created_at, is_deleted, is_activated FROM users
+SELECT id, nickname, email, password, profile_id, created_at, is_deleted FROM users
 WHERE email = ? 
 AND is_deleted = 0
 ORDER By created_at DESC
@@ -64,63 +64,12 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.ProfileID,
 		&i.CreatedAt,
 		&i.IsDeleted,
-		&i.IsActivated,
-	)
-	return i, err
-}
-
-const getUserByEmailActivated = `-- name: GetUserByEmailActivated :one
-SELECT id, nickname, email, password, profile_id, created_at, is_deleted, is_activated FROM users
-WHERE email = ? 
-AND is_deleted = 0
-AND is_activated = 1
-ORDER By created_at DESC
-LIMIT 1
-`
-
-func (q *Queries) GetUserByEmailActivated(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmailActivated, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Nickname,
-		&i.Email,
-		&i.Password,
-		&i.ProfileID,
-		&i.CreatedAt,
-		&i.IsDeleted,
-		&i.IsActivated,
-	)
-	return i, err
-}
-
-const getUserByEmailNotActivated = `-- name: GetUserByEmailNotActivated :one
-SELECT id, nickname, email, password, profile_id, created_at, is_deleted, is_activated FROM users
-WHERE email = ? 
-AND is_deleted = 0
-AND is_activated = 0
-ORDER By created_at DESC
-LIMIT 1
-`
-
-func (q *Queries) GetUserByEmailNotActivated(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserByEmailNotActivated, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.Nickname,
-		&i.Email,
-		&i.Password,
-		&i.ProfileID,
-		&i.CreatedAt,
-		&i.IsDeleted,
-		&i.IsActivated,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, nickname, email, password, profile_id, created_at, is_deleted, is_activated FROM users
+SELECT id, nickname, email, password, profile_id, created_at, is_deleted FROM users
 WHERE id = ? 
 AND is_deleted = 0
 LIMIT 1
@@ -137,13 +86,12 @@ func (q *Queries) GetUserByID(ctx context.Context, id int64) (User, error) {
 		&i.ProfileID,
 		&i.CreatedAt,
 		&i.IsDeleted,
-		&i.IsActivated,
 	)
 	return i, err
 }
 
 const getUserByNickName = `-- name: GetUserByNickName :one
-SELECT id, nickname, email, password, profile_id, created_at, is_deleted, is_activated FROM users
+SELECT id, nickname, email, password, profile_id, created_at, is_deleted FROM users
 WHERE nickname = ? 
 AND is_deleted = 0
 LIMIT 1
@@ -160,7 +108,6 @@ func (q *Queries) GetUserByNickName(ctx context.Context, nickname string) (User,
 		&i.ProfileID,
 		&i.CreatedAt,
 		&i.IsDeleted,
-		&i.IsActivated,
 	)
 	return i, err
 }

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package post.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/post;pb_pst";
+
+import "google/api/annotations.proto";
+
+service PostService {
+	rpc PostService() returns () {
+	}
+}

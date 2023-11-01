@@ -10,22 +10,26 @@ import (
 )
 
 type Querier interface {
-	ActivateUser(ctx context.Context, id int64) error
-	AddActivation(ctx context.Context, arg AddActivationParams) (sql.Result, error)
+	AddCaptcha(ctx context.Context, arg AddCaptchaParams) (sql.Result, error)
+	AddFollow(ctx context.Context, arg AddFollowParams) (sql.Result, error)
 	AddProfile(ctx context.Context, arg AddProfileParams) (sql.Result, error)
 	AddUser(ctx context.Context, arg AddUserParams) (sql.Result, error)
-	DeleteActivation(ctx context.Context, id int64) error
+	DeleteCaptcha(ctx context.Context, id int64) error
+	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
 	DeleteProfile(ctx context.Context, id int64) error
 	DeleteUser(ctx context.Context, id int64) error
-	GetActivationByID(ctx context.Context, id int64) (UserActivation, error)
-	GetActivationByUserIDAndCode(ctx context.Context, arg GetActivationByUserIDAndCodeParams) (UserActivation, error)
+	GetAllVideoClass(ctx context.Context) ([]VideoClass, error)
+	GetCaptchaByEmailAndCode(ctx context.Context, arg GetCaptchaByEmailAndCodeParams) (Captcha, error)
+	GetCaptchaByID(ctx context.Context, id int64) (Captcha, error)
+	GetFollow(ctx context.Context, arg GetFollowParams) (Follow, error)
+	GetFollowedList(ctx context.Context, followedUserID int64) ([]GetFollowedListRow, error)
+	GetFollowingList(ctx context.Context, followingUserID int64) ([]GetFollowingListRow, error)
 	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
-	GetUserByEmailActivated(ctx context.Context, email string) (User, error)
-	GetUserByEmailNotActivated(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByNickName(ctx context.Context, nickname string) (User, error)
-	TodayActiationCount(ctx context.Context, userID int64) (int64, error)
+	GetVideoClassByID(ctx context.Context, id int32) (VideoClass, error)
+	TodayEmailCount(ctx context.Context, email string) (int64, error)
 	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error
 	UpdateNickName(ctx context.Context, arg UpdateNickNameParams) (sql.Result, error)
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error

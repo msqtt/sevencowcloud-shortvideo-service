@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "user/activate_message.proto",
+    "title": "user/captcha_message.proto",
     "version": "version not set"
   },
   "consumes": [

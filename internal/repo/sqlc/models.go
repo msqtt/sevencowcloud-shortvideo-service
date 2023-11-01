@@ -54,6 +54,15 @@ func (ns NullProfilesGender) Value() (driver.Value, error) {
 	return string(ns.ProfilesGender), nil
 }
 
+type Captcha struct {
+	ID      int64  `json:"id"`
+	Email   string `json:"email"`
+	Captcha string `json:"captcha"`
+	// 验证码是否被删除, 0 表示否 1 表示是
+	IsDeleted int32     `json:"is_deleted"`
+	ExpiredAt time.Time `json:"expired_at"`
+}
+
 type Collection struct {
 	ID        int64     `json:"id"`
 	FolderID  int64     `json:"folder_id"`
@@ -73,7 +82,7 @@ type Comment struct {
 type Follow struct {
 	FollowingUserID int64     `json:"following_user_id"`
 	FollowedUserID  int64     `json:"followed_user_id"`
-	CreatedAt       time.Time `json:"created_at"`
+	FollowedAt      time.Time `json:"followed_at"`
 }
 
 type Like struct {
@@ -132,17 +141,6 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	// 账户是否被删除, 0 表示否 1 表示是
 	IsDeleted int32 `json:"is_deleted"`
-	// 账户是否激活, 0 表示否 1 表示是
-	IsActivated int32 `json:"is_activated"`
-}
-
-type UserActivation struct {
-	ID           int64  `json:"id"`
-	UserID       int64  `json:"user_id"`
-	ActivateCode string `json:"activate_code"`
-	// 激活码是否被删除, 0 表示否 1 表示是
-	IsDeleted int32     `json:"is_deleted"`
-	ExpiredAt time.Time `json:"expired_at"`
 }
 
 type UserCollectFolder struct {

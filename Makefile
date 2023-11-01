@@ -8,11 +8,13 @@ dev:
 gen:
 	protoc --proto_path=api/protos/v1 \
 		--go_out=api/pb/v1 --go_opt=paths=source_relative \
-		--go-grpc_out=api/pb/v1 --go-grpc_opt=paths=source_relative \
+		--go-grpc_out=api/pb/v1 --go-grpc_opt=paths=source_relative  \
 		--grpc-gateway_out=api/pb/v1 --grpc-gateway_opt paths=source_relative \
 		--openapiv2_out=api/openapi/v1 \
 		api/protos/v1/user/*.proto \
-		api/protos/v1/profile/*.proto
+		api/protos/v1/profile/*.proto \
+		api/protos/v1/follow/*.proto \
+		api/protos/v1/video/*.proto 
 sqlc:
 	sqlc generate -f configs/sqlc.yaml
 dev-up:
@@ -20,7 +22,8 @@ dev-up:
 dev-down:
 	docker compose -f ./deploy/dev-compose.yml down
 mock:
-	mockgen -package mockdb -destination internal/repo/mock/store.go $(MOD_NAME)/internal/repo/sqlc Store
+	mockgen -package mockdb -destination internal/repo/mock/store.go \
+		$(MOD_NAME)/internal/repo/sqlc Store
 migrate-up:
 	migrate -path internal/db/migration/ -database "$(URL_DB)" up
 migrate-down:

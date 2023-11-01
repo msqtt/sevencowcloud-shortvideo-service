@@ -12,3 +12,8 @@ message User {
 	profile.v1.Profile profile = 4;
 	int64 created_at = 5;
 }
+
+message UserItem {
+	User user = 1;
+	bool is_followed = 2;
+}

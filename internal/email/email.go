@@ -40,9 +40,9 @@ func (ms *MailSender) SendEmail(toAddr []string, sub, body string) error {
 }
 
 // SendActivateEmail sends an activation email to addr
-func (ms *MailSender) SendActivateEmail(toAddr, nickname, code, ip string) error {
-	content := fmt.Sprintf("尊敬的%s：\n您好，您在 ShortVideo 应用注册了账户，"+
-		"您的激活码是：%s，您注册时使用的IP地址为 %s，请确保收到该邮件后的 10分钟 内激活该账户，"+
-		"否则本次注册失败。", nickname, code, ip)
-	return ms.SendEmail([]string{toAddr}, "ShortVideo 账户激活", content)
+func (ms *MailSender) SendActivateEmail(toAddr, code, ip string) error {
+	content := fmt.Sprintf("尊敬的用户：\n您好，您在 ShortVideo 应用注册了账户，"+
+		"您的验证码是：%s，您注册时使用的IP地址为 %s，请确保收到该邮件后的 10分钟 内注册该账户，"+
+		"否则本次注册失败。", code, ip)
+	return ms.SendEmail([]string{toAddr}, "ShortVideo 账户注册", content)
 }

@@ -6,8 +6,7 @@ option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/u
 import "google/api/annotations.proto";
 import "user/login_message.proto";
 import "user/register_message.proto";
-import "user/activate_message.proto";
-import "user/email_message.proto";
+import "user/captcha_message.proto";
 
 service AuthService {
 	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
@@ -22,15 +21,9 @@ service AuthService {
       body: "*"
 		};
 	}
-	rpc ActivateUser(ActivateUserRequest) returns (ActivateUserResponse) {
+	rpc SendCaptcha(SendCaptchaRequest) returns (SendCaptchaResponse) {
 		option (google.api.http) = {
-			post: "/v1/auth/activate"
-      body: "*"
-		};
-	}
-	rpc SendActivateEmail(SendActivateEmailRequest) returns (SendActivateEmailResponse) {
-		option (google.api.http) = {
-			post: "/v1/auth/email/{user_id}"
+			post: "/v1/auth/captcha"
       body: "*"
 		};
 	}

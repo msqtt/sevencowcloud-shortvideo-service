@@ -17,22 +17,6 @@ WHERE nickname = ?
 AND is_deleted = 0
 LIMIT 1;
 
--- name: GetUserByEmailActivated :one
-SELECT * FROM users
-WHERE email = ? 
-AND is_deleted = 0
-AND is_activated = 1
-ORDER By created_at DESC
-LIMIT 1;
-
--- name: GetUserByEmailNotActivated :one
-SELECT * FROM users
-WHERE email = ? 
-AND is_deleted = 0
-AND is_activated = 0
-ORDER By created_at DESC
-LIMIT 1;
-
 -- name: GetUserByEmail :one
 SELECT * FROM users
 WHERE email = ? 

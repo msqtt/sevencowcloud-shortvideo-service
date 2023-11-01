@@ -3,7 +3,6 @@ syntax = "proto3";
 package profile.v1;
 option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile;pb_prf";
 
-
 message Profile {
 	string real_name = 1;
 	string mood = 2;

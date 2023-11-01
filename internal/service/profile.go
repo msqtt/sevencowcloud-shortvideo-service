@@ -52,7 +52,7 @@ func (ps *ProfileServer) UpdateProfile(ctx context.Context, req *pb_prf.UpdatePr
 	payload := payl.(*token.Payload)
 
 	if id != payload.UserID {
-		return nil, status.Errorf(codes.PermissionDenied, "cannot update other user's profiles")
+		return nil, status.Errorf(codes.PermissionDenied, "permission denied")
 	}
 
 	u, err := ps.store.GetUserByID(ctx, id)
@@ -96,7 +96,7 @@ func (ps *ProfileServer) UpdateProfile(ctx context.Context, req *pb_prf.UpdatePr
 var _ pb_prf.ProfileServiceServer = (*ProfileServer)(nil)
 
 // NewProfileServer creates a profile server then return it.
-func NewProfileServer(store db.Store, conf config.Config) *ProfileServer {
+func NewProfileServer(conf config.Config, store db.Store) *ProfileServer {
 	return &ProfileServer{
 		config: conf,
 		store:  store,

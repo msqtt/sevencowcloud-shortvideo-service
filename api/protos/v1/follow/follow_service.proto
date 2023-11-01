@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package follow.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/follow;pb_fl";
+
+import "google/api/annotations.proto";
+import "follow/follow_message.proto";
+
+service FollowService {
+	rpc CheckFollow(CheckFollowRequest) returns (CheckFollowResponse) {
+		option (google.api.http) = {
+			get: "/v1/follow/{following_id}/{followed_id}"
+		};
+	}
+	rpc FollowUser(FollowUserRequest) returns (FollowUserResponse) {
+		option (google.api.http) = {
+			post: "/v1/follow/{following_id}/{followed_id}"
+		};
+	}
+	rpc UnFollowUser(UnFollowUserRequest) returns (UnFollowUserResponse) {
+		option (google.api.http) = {
+			delete: "/v1/follow/{following_id}/{followed_id}"
+		};
+	}
+	rpc FollowingList(FollowingListRequest) returns (FollowingListResponse) {
+		option (google.api.http) = {
+			get: "/v1/follow/list/following/{user_id}"
+		};
+	}
+	rpc FollowedList(FollowedListRequest) returns (FollowedListResponse) {
+		option (google.api.http) = {
+			get: "/v1/follow/list/followed/{user_id}"
+		};
+	}
+}
