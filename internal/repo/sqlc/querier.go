@@ -43,6 +43,7 @@ type Querier interface {
 	SearchPostByTag(ctx context.Context, concat interface{}) ([]int32, error)
 	SearchPostByTitle(ctx context.Context, arg SearchPostByTitleParams) ([]Post, error)
 	TestGetAll(ctx context.Context, arg TestGetAllParams) ([]TestGetAllRow, error)
+	TestGetAllByTagID(ctx context.Context, arg TestGetAllByTagIDParams) ([]TestGetAllByTagIDRow, error)
 	TodayEmailCount(ctx context.Context, email string) (int64, error)
 	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error
 	UpdateNickName(ctx context.Context, arg UpdateNickNameParams) (sql.Result, error)

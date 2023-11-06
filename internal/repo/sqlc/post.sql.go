@@ -47,7 +47,7 @@ func (q *Queries) DeletePost(ctx context.Context, id int64) error {
 }
 
 const getPostByID = `-- name: GetPostByID :one
-SELECT id, title, description, user_id, video_id, is_deleted, updated_at, created_at FROM posts
+SELECT id, title, description, user_id, video_id, updated_at, created_at, is_deleted FROM posts
 WHERE id = ?
 AND is_deleted = 0
 LIMIT 1
@@ -62,15 +62,15 @@ func (q *Queries) GetPostByID(ctx context.Context, id int64) (Post, error) {
 		&i.Description,
 		&i.UserID,
 		&i.VideoID,
-		&i.IsDeleted,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.IsDeleted,
 	)
 	return i, err
 }
 
 const getPostByUserID = `-- name: GetPostByUserID :many
-SELECT id, title, description, user_id, video_id, is_deleted, updated_at, created_at FROM posts
+SELECT id, title, description, user_id, video_id, updated_at, created_at, is_deleted FROM posts
 WHERE user_id = ?
 AND is_deleted = 0
 LIMIT ?,?
@@ -97,9 +97,9 @@ func (q *Queries) GetPostByUserID(ctx context.Context, arg GetPostByUserIDParams
 			&i.Description,
 			&i.UserID,
 			&i.VideoID,
-			&i.IsDeleted,
 			&i.UpdatedAt,
 			&i.CreatedAt,
+			&i.IsDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -115,7 +115,7 @@ func (q *Queries) GetPostByUserID(ctx context.Context, arg GetPostByUserIDParams
 }
 
 const searchPostByTitle = `-- name: SearchPostByTitle :many
-SELECT id, title, description, user_id, video_id, is_deleted, updated_at, created_at FROM posts
+SELECT id, title, description, user_id, video_id, updated_at, created_at, is_deleted FROM posts
 WHERE title like "%?%"
 AND is_deleted = 0
 LIMIT ?,?
@@ -141,9 +141,9 @@ func (q *Queries) SearchPostByTitle(ctx context.Context, arg SearchPostByTitlePa
 			&i.Description,
 			&i.UserID,
 			&i.VideoID,
-			&i.IsDeleted,
 			&i.UpdatedAt,
 			&i.CreatedAt,
+			&i.IsDeleted,
 		); err != nil {
 			return nil, err
 		}
@@ -159,7 +159,7 @@ func (q *Queries) SearchPostByTitle(ctx context.Context, arg SearchPostByTitlePa
 }
 
 const testGetAll = `-- name: TestGetAll :many
-SELECT id, title, description, user_id, video_id, is_deleted, updated_at, created_at, (SELECT count(id) FROM posts) total_size
+SELECT id, title, description, user_id, video_id, updated_at, created_at, is_deleted, (SELECT count(id) FROM posts) total_size
 FROM posts
 WHERE is_deleted = 0
 LIMIT ?, ?
@@ -176,9 +176,9 @@ type TestGetAllRow struct {
 	Description string    `json:"description"`
 	UserID      int64     `json:"user_id"`
 	VideoID     int64     `json:"video_id"`
-	IsDeleted   int32     `json:"is_deleted"`
 	UpdatedAt   time.Time `json:"updated_at"`
 	CreatedAt   time.Time `json:"created_at"`
+	IsDeleted   int32     `json:"is_deleted"`
 	TotalSize   int64     `json:"total_size"`
 }
 
@@ -197,9 +197,74 @@ func (q *Queries) TestGetAll(ctx context.Context, arg TestGetAllParams) ([]TestG
 			&i.Description,
 			&i.UserID,
 			&i.VideoID,
-			&i.IsDeleted,
 			&i.UpdatedAt,
 			&i.CreatedAt,
+			&i.IsDeleted,
+			&i.TotalSize,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const testGetAllByTagID = `-- name: TestGetAllByTagID :many
+SELECT p.id, p.title, p.description, p.user_id, p.video_id, p.updated_at, p.created_at, p.is_deleted, (select count(*) from post_tag ipt where ipt.tag_id = ?) total_size  FROM post_tag pt
+join posts p on pt.post_id = p.id
+WHERE pt.tag_id = ?
+AND is_deleted = 0
+LIMIT ?, ?
+`
+
+type TestGetAllByTagIDParams struct {
+	TagID   int32 `json:"tag_id"`
+	TagID_2 int32 `json:"tag_id_2"`
+	Offset  int32 `json:"offset"`
+	Limit   int32 `json:"limit"`
+}
+
+type TestGetAllByTagIDRow struct {
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	UserID      int64     `json:"user_id"`
+	VideoID     int64     `json:"video_id"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	IsDeleted   int32     `json:"is_deleted"`
+	TotalSize   int64     `json:"total_size"`
+}
+
+func (q *Queries) TestGetAllByTagID(ctx context.Context, arg TestGetAllByTagIDParams) ([]TestGetAllByTagIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, testGetAllByTagID,
+		arg.TagID,
+		arg.TagID_2,
+		arg.Offset,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []TestGetAllByTagIDRow{}
+	for rows.Next() {
+		var i TestGetAllByTagIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Title,
+			&i.Description,
+			&i.UserID,
+			&i.VideoID,
+			&i.UpdatedAt,
+			&i.CreatedAt,
+			&i.IsDeleted,
 			&i.TotalSize,
 		); err != nil {
 			return nil, err

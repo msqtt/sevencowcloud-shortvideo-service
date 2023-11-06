@@ -94,15 +94,14 @@ type Like struct {
 }
 
 type Post struct {
-	ID          int64  `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	UserID      int64  `json:"user_id"`
-	VideoID     int64  `json:"video_id"`
-	// 0 表示否 1 表示是
-	IsDeleted int32     `json:"is_deleted"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ID          int64     `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	UserID      int64     `json:"user_id"`
+	VideoID     int64     `json:"video_id"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	IsDeleted   int32     `json:"is_deleted"`
 }
 
 type PostTag struct {

@@ -31,6 +31,7 @@ func (ps *PostServer) TestGetRecommendPost(ctx context.Context,
 	*pb_pst.TestGetRecommendPostResponse, error) {
 	pIndex := req.GetPageIndex()
 	pSize := req.GetPageSize()
+	tagId := req.GetTagId()
 
 	if pIndex == 0 {
 		pIndex = 1
@@ -39,18 +40,51 @@ func (ps *PostServer) TestGetRecommendPost(ctx context.Context,
 		pSize = 10
 	}
 
-	param := db.TestGetAllParams{
-		Offset: (pIndex - 1) * pSize,
-		Limit:  pSize,
-	}
-
 	m := extractMetadata(ctx)
 	var payload *token.Payload
 	if len(m.Token) > 0 {
 		payload, _ = ps.token.ValidToken(m.Token)
 	}
 
-	tgar, err := ps.store.TestGetAll(ctx, param)
+	if tagId == 0 {
+		params := db.TestGetAllParams{
+			Offset: (pIndex - 1) * pSize,
+			Limit:  pSize,
+		}
+		tgar, err := ps.store.TestGetAll(ctx, params)
+		if err != nil {
+			return nil, status.Errorf(codes.Internal, "failed to get recommend posts")
+		}
+		ret := make([]*pb_pst.PostItem, len(tgar))
+		for i, row := range tgar {
+			item, err := GetPostItem(ctx, ps.store, ps.config, payload, row.UserID, row.ID, row.VideoID,
+				row.Title, row.Description, row.UpdatedAt, row.CreatedAt)
+			if err != nil {
+				log.Println(err)
+			}
+			ret[i] = item
+		}
+		var total int32 = 0
+		if len(tgar) > 0 {
+			total = int32(tgar[0].TotalSize)
+		}
+		return &pb_pst.TestGetRecommendPostResponse{
+			Total:     total,
+			PageSize:  pSize,
+			PagePos:   pIndex,
+			PostItems: ret,
+		}, nil
+
+	}
+
+	param := db.TestGetAllByTagIDParams{
+		TagID:   tagId,
+		TagID_2: tagId,
+		Offset:  (pIndex - 1) * pSize,
+		Limit:   pSize,
+	}
+
+	tgar, err := ps.store.TestGetAllByTagID(ctx, param)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "failed to get recommend posts")
 	}
@@ -169,9 +203,9 @@ func (ps *PostServer) UploadPost(ctx context.Context, req *pb_pst.UploadPostRequ
 
 	// db: update video
 	vParams := db.UpdateVideoLinkParams{
-		CoverLink:   ckey,
-		SrcLink:     vkey,
-		ID: vid,
+		CoverLink: ckey,
+		SrcLink:   vkey,
+		ID:        vid,
 	}
 	err := ps.store.UpdateVideoLink(ctx, vParams)
 	if err != nil {
@@ -210,7 +244,7 @@ func (ps *PostServer) UploadPost(ctx context.Context, req *pb_pst.UploadPostRequ
 		if err7 != nil {
 			log.Println(err7)
 		}
-		dbTag[i] =  alltags[id-1]
+		dbTag[i] = alltags[id-1]
 	}
 
 	postitem := &pb_pst.PostItem{
@@ -222,8 +256,8 @@ func (ps *PostServer) UploadPost(ctx context.Context, req *pb_pst.UploadPostRequ
 			UpdatedAt:   time.Now(),
 			CreatedAt:   time.Now(),
 		}, db.Video{
-			CoverLink:   ckey,
-			SrcLink:     vkey,
+			CoverLink: ckey,
+			SrcLink:   vkey,
 		}, dbTag,
 		),
 		IsLiked:      false,
@@ -244,6 +278,6 @@ func NewPostServer(conf config.Config, token token.TokenMaker, store db.Store, k
 		config: conf,
 		token:  token,
 		store:  store,
-		kodo: kodo,
+		kodo:   kodo,
 	}
 }

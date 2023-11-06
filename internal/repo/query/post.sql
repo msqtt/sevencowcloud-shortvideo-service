@@ -11,6 +11,13 @@ FROM posts
 WHERE is_deleted = 0
 LIMIT ?, ?;
 
+-- name: TestGetAllByTagID :many
+SELECT p.*, (select count(*) from post_tag ipt where ipt.tag_id = ?) total_size  FROM post_tag pt
+join posts p on pt.post_id = p.id
+WHERE pt.tag_id = ?
+AND is_deleted = 0
+LIMIT ?, ?;
+
 -- name: GetPostByID :one
 SELECT * FROM posts
 WHERE id = ?

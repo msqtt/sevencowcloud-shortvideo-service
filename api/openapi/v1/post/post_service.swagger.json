@@ -47,6 +47,13 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "tagId",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -102,6 +109,10 @@
                     "type": "integer",
                     "format": "int32"
                   }
+                },
+                "tagId": {
+                  "type": "string",
+                  "format": "int64"
                 }
               }
             }

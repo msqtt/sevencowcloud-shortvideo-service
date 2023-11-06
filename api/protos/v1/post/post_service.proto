@@ -10,6 +10,7 @@ import "post/post_message.proto";
 message TestGetRecommendPostRequest {
 	int32 page_size = 1;
 	int32 page_index = 2;
+	int32 tag_id = 3;
 }
 
 message TestGetRecommendPostResponse {

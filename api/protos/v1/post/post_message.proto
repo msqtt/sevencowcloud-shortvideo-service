@@ -10,6 +10,7 @@ message UploadPostRequest {
 	int64 user_id = 3;
 	repeated int32 tag_ids = 4;
 	int64 video_id = 5;
+	int64 tag_id = 6;
 }
 
 message UploadPostResponse {
