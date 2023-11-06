@@ -3,7 +3,7 @@ INSERT INTO profiles (
 	real_name, mood, gender, birth_date, introduction, avatar_link
 ) VALUES ( ?, ?, ?, ?, ?, ?);
 
--- name: GetProfile :one
+-- name: GetProfileByID :one
 SELECT * FROM profiles
 WHERE id = ?;
 

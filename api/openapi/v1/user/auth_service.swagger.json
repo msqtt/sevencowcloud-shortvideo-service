@@ -7,6 +7,9 @@
   "tags": [
     {
       "name": "AuthService"
+    },
+    {
+      "name": "UserService"
     }
   ],
   "consumes": [
@@ -111,6 +114,37 @@
           "AuthService"
         ]
       }
+    },
+    "/v1/user/{userId}": {
+      "get": {
+        "operationId": "UserService_GetUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
     }
   },
   "definitions": {
@@ -139,6 +173,14 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        }
+      }
+    },
+    "v1GetUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1UserItem"
         }
       }
     },
@@ -253,6 +295,17 @@
         "createdAt": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "v1UserItem": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        },
+        "isFollowed": {
+          "type": "boolean"
         }
       }
     }

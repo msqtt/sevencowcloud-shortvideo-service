@@ -26,6 +26,30 @@ func (q *Queries) AddFollow(ctx context.Context, arg AddFollowParams) (sql.Resul
 	return q.db.ExecContext(ctx, addFollow, arg.FollowingUserID, arg.FollowedUserID)
 }
 
+const countFollowed = `-- name: CountFollowed :one
+SELECT count(*) followed_cnt FROM follows
+WHERE followed_user_id = ?
+`
+
+func (q *Queries) CountFollowed(ctx context.Context, followedUserID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFollowed, followedUserID)
+	var followed_cnt int64
+	err := row.Scan(&followed_cnt)
+	return followed_cnt, err
+}
+
+const countFollowing = `-- name: CountFollowing :one
+SELECT count(*) following_cnt FROM follows
+WHERE following_user_id = ?
+`
+
+func (q *Queries) CountFollowing(ctx context.Context, followingUserID int64) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countFollowing, followingUserID)
+	var following_cnt int64
+	err := row.Scan(&following_cnt)
+	return following_cnt, err
+}
+
 const deleteFollow = `-- name: DeleteFollow :exec
 DELETE FROM follows
 	WHERE following_user_id = ?

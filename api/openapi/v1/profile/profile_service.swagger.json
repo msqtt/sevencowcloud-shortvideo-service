@@ -17,35 +17,6 @@
   ],
   "paths": {
     "/v1/profile/{userId}": {
-      "get": {
-        "operationId": "ProfileService_GetProfile",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1GetProfileResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "int64"
-          }
-        ],
-        "tags": [
-          "ProfileService"
-        ]
-      },
       "put": {
         "operationId": "ProfileService_UpdateProfile",
         "responses": {
@@ -138,14 +109,6 @@
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
-        }
-      }
-    },
-    "v1GetProfileResponse": {
-      "type": "object",
-      "properties": {
-        "profile": {
-          "$ref": "#/definitions/v1Profile"
         }
       }
     },

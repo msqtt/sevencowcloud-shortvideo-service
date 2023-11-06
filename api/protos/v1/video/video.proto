@@ -3,8 +3,14 @@ syntax = "proto3";
 package video.v1;
 option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/video;pb_vid";
 
-message VideoClass {
-	int64 id = 1;
+message Video {
+	string cover_link = 1;
+	string src_link = 2;
+	string content_hash = 3;
+}
+
+message Tag {
+	int32 tag_id = 1;
 	string name = 2;
 	string description = 3;
 }

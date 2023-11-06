@@ -20,23 +20,25 @@ type VideoServer struct {
 }
 
 // ListVideoClass implements pb_vid.VideoServiceServer.
-func (vs *VideoServer) ListVideoClass(ctx context.Context, req *pb_vid.ListVideoClassRequest) (*pb_vid.ListVideoClassResponse, error) {
-	vc, err := vs.store.GetAllVideoClass(ctx)
+func (vs *VideoServer) ListVideoTag(ctx context.Context, req *pb_vid.ListVideoTagRequest) (*pb_vid.ListVideoTagResponse, error) {
+	ta, err := vs.store.GetAllTags(ctx)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return nil, status.Errorf(codes.Internal, "failed to find video calss")
 		}
 	}
 
-	vcs := make([]*pb_vid.VideoClass, len(vc))
-	for i, e := range vc {
-		vcs[i] = &pb_vid.VideoClass{
-			Id:          int64(e.ID),
+	tas := make([]*pb_vid.Tag, len(ta))
+	for i, e := range ta {
+		tas[i] = &pb_vid.Tag{
+			TagId:          e.ID,
 			Name:        e.Name,
 			Description: e.Description,
 		}
 	}
-	return &pb_vid.ListVideoClassResponse{VideoClass: vcs}, nil
+	return &pb_vid.ListVideoTagResponse{
+		Tags: tas,
+	}, nil
 }
 
 var _ pb_vid.VideoServiceServer = (*VideoServer)(nil)

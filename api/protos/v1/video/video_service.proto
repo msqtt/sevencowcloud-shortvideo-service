@@ -6,18 +6,17 @@ option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/v
 import "google/api/annotations.proto";
 import "video/video.proto";
 
-
-message ListVideoClassRequest {
+message ListVideoTagRequest {
 }
 
-message ListVideoClassResponse {
-	repeated VideoClass video_class = 1;
+message ListVideoTagResponse {
+	repeated Tag tags = 1;
 }
 
 service VideoService {
-	rpc ListVideoClass (ListVideoClassRequest) returns (ListVideoClassResponse) {
+	rpc ListVideoTag (ListVideoTagRequest) returns (ListVideoTagResponse) {
 		option (google.api.http) = {
-			get: "/v1/video/class"
+			get: "/v1/video/tags"
 		};
 	}
 }

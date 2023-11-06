@@ -1,25 +1,16 @@
--- video_class table insert default data.
-INSERT INTO video_class (name,description)
-	VALUES ('舞蹈','舞蹈分区');
-INSERT INTO video_class (name,description)
-	VALUES ('体育','体育分区');
-INSERT INTO video_class (name,description)
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('知识','知识分区');
+INSERT INTO shortvideo.tags (name,description)
 	VALUES ('游戏','游戏分区');
-INSERT INTO video_class (name,description)
-	VALUES ('动漫','动漫分区');
-INSERT INTO video_class (name,description)
-	VALUES ('美术','美分区术');
-INSERT INTO video_class (name,description)
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('娱乐','娱乐分区');
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('二次元','二次元分区');
+INSERT INTO shortvideo.tags (name,description)
 	VALUES ('音乐','音乐分区');
-INSERT INTO video_class (name,description)
-	VALUES ('科技','科技分区');
-INSERT INTO video_class (name,description)
-	VALUES ('数码','数码分区');
-INSERT INTO video_class (name,description)
-	VALUES ('服装','服装分区');
-INSERT INTO video_class (name,description)
-	VALUES ('生活','生活分区');
-INSERT INTO video_class (name,description)
-	VALUES ('教育','教育分区');
-INSERT INTO video_class (name,description)
-	VALUES ('其它','其它分区');
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('美食','美食分区');
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('体育','体育分区');
+INSERT INTO shortvideo.tags (name,description)
+	VALUES ('时尚','时尚分区');

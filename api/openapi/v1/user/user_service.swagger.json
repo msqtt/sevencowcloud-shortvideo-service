@@ -1,0 +1,321 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "user/user_service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "AuthService"
+    },
+    {
+      "name": "UserService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/auth/captcha": {
+      "post": {
+        "operationId": "AuthService_SendCaptcha",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1SendCaptchaResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1SendCaptchaRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "operationId": "AuthService_LoginUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1LoginUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LoginUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "operationId": "AuthService_RegisterUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1RegisterUserResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1RegisterUserRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AuthService"
+        ]
+      }
+    },
+    "/v1/user/{userId}": {
+      "get": {
+        "operationId": "UserService_GetUserProfile",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetUserProfileResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "UserService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1GetUserProfileResponse": {
+      "type": "object",
+      "properties": {
+        "userItem": {
+          "$ref": "#/definitions/v1UserItem"
+        }
+      }
+    },
+    "v1LoginUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      }
+    },
+    "v1LoginUserResponse": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1Profile": {
+      "type": "object",
+      "properties": {
+        "realName": {
+          "type": "string"
+        },
+        "mood": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "birthDate": {
+          "type": "string",
+          "format": "int64"
+        },
+        "introduction": {
+          "type": "string"
+        },
+        "avatarLink": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1RegisterUserRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "captcha": {
+          "type": "string"
+        }
+      }
+    },
+    "v1RegisterUserResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        }
+      }
+    },
+    "v1SendCaptchaRequest": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string"
+        }
+      }
+    },
+    "v1SendCaptchaResponse": {
+      "type": "object",
+      "properties": {
+        "todayLeftTimes": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1User": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "nickname": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/definitions/v1Profile"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1UserItem": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/v1User"
+        },
+        "isFollowed": {
+          "type": "boolean"
+        },
+        "followingNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "followedNum": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    }
+  }
+}

@@ -58,7 +58,7 @@ type Captcha struct {
 	ID      int64  `json:"id"`
 	Email   string `json:"email"`
 	Captcha string `json:"captcha"`
-	// 验证码是否被删除, 0 表示否 1 表示是
+	// 激活码是否被删除, 0 表示否 1 表示是
 	IsDeleted int32     `json:"is_deleted"`
 	ExpiredAt time.Time `json:"expired_at"`
 }
@@ -94,12 +94,11 @@ type Like struct {
 }
 
 type Post struct {
-	ID           int64  `json:"id"`
-	Title        string `json:"title"`
-	Description  string `json:"description"`
-	UserID       int64  `json:"user_id"`
-	VideoID      int64  `json:"video_id"`
-	VideoClassID int32  `json:"video_class_id"`
+	ID          int64  `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	UserID      int64  `json:"user_id"`
+	VideoID     int64  `json:"video_id"`
 	// 0 表示否 1 表示是
 	IsDeleted int32     `json:"is_deleted"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -107,9 +106,8 @@ type Post struct {
 }
 
 type PostTag struct {
-	ID         sql.NullInt64  `json:"id"`
-	PostID     int64          `json:"post_id"`
-	TagContent sql.NullString `json:"tag_content"`
+	PostID int64 `json:"post_id"`
+	TagID  int32 `json:"tag_id"`
 }
 
 type Profile struct {
@@ -129,6 +127,14 @@ type Share struct {
 	ID     int64 `json:"id"`
 	UserID int64 `json:"user_id"`
 	PostID int64 `json:"post_id"`
+}
+
+type Tag struct {
+	ID          int32  `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	// 0 表示否 1 表示是
+	IsEnabled int32 `json:"is_enabled"`
 }
 
 type User struct {
@@ -160,14 +166,8 @@ type UserUpload struct {
 
 type Video struct {
 	ID          int64     `json:"id"`
-	ContentHash string    `json:"content_hash"`
+	CoverLink   string    `json:"cover_link"`
+	SrcLink     string    `json:"src_link"`
 	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type VideoClass struct {
-	ID          int32  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	// 0 表示否 1 表示是
-	IsEnabled int32 `json:"is_enabled"`
+	ContentHash string    `json:"content_hash"`
 }

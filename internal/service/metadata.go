@@ -11,11 +11,13 @@ const (
 	grpcGatewayUserAgentHeader = "grpcgateway-user-agent"
 	userAgentHeader            = "user-agent"
 	xForwardedForHeader        = "x-forwarded-for"
+	Authorization              = "authorization"
 )
 
 type Metadata struct {
 	UserAgent string
 	ClientIP  string
+	Token     string
 }
 
 func extractMetadata(ctx context.Context) *Metadata {
@@ -24,6 +26,10 @@ func extractMetadata(ctx context.Context) *Metadata {
 	if md, ok := metadata.FromIncomingContext(ctx); ok {
 		if userAgents := md.Get(grpcGatewayUserAgentHeader); len(userAgents) > 0 {
 			mtdt.UserAgent = userAgents[0]
+		}
+
+		if authorization := md.Get(Authorization); len(authorization) > 0 {
+			mtdt.Token = authorization[0]
 		}
 
 		if userAgents := md.Get(userAgentHeader); len(userAgents) > 0 {

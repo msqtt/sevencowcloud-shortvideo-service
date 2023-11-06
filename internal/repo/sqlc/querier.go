@@ -12,27 +12,43 @@ import (
 type Querier interface {
 	AddCaptcha(ctx context.Context, arg AddCaptchaParams) (sql.Result, error)
 	AddFollow(ctx context.Context, arg AddFollowParams) (sql.Result, error)
+	AddPost(ctx context.Context, arg AddPostParams) (sql.Result, error)
+	AddPostTag(ctx context.Context, arg AddPostTagParams) error
 	AddProfile(ctx context.Context, arg AddProfileParams) (sql.Result, error)
 	AddUser(ctx context.Context, arg AddUserParams) (sql.Result, error)
+	AddVideo(ctx context.Context, arg AddVideoParams) (sql.Result, error)
+	CountFollowed(ctx context.Context, followedUserID int64) (int64, error)
+	CountFollowing(ctx context.Context, followingUserID int64) (int64, error)
 	DeleteCaptcha(ctx context.Context, id int64) error
 	DeleteFollow(ctx context.Context, arg DeleteFollowParams) error
+	DeletePost(ctx context.Context, id int64) error
 	DeleteProfile(ctx context.Context, id int64) error
+	DeleteTag(ctx context.Context, arg DeleteTagParams) error
 	DeleteUser(ctx context.Context, id int64) error
-	GetAllVideoClass(ctx context.Context) ([]VideoClass, error)
+	GetAllTags(ctx context.Context) ([]Tag, error)
 	GetCaptchaByEmailAndCode(ctx context.Context, arg GetCaptchaByEmailAndCodeParams) (Captcha, error)
 	GetCaptchaByID(ctx context.Context, id int64) (Captcha, error)
 	GetFollow(ctx context.Context, arg GetFollowParams) (Follow, error)
 	GetFollowedList(ctx context.Context, followedUserID int64) ([]GetFollowedListRow, error)
 	GetFollowingList(ctx context.Context, followingUserID int64) ([]GetFollowingListRow, error)
-	GetProfile(ctx context.Context, id int64) (Profile, error)
+	GetPostByID(ctx context.Context, id int64) (Post, error)
+	GetPostByUserID(ctx context.Context, arg GetPostByUserIDParams) ([]Post, error)
+	GetProfileByID(ctx context.Context, id int64) (Profile, error)
+	GetTagByID(ctx context.Context, id int32) (Tag, error)
+	GetTagsByPostID(ctx context.Context, postID int64) ([]GetTagsByPostIDRow, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id int64) (User, error)
 	GetUserByNickName(ctx context.Context, nickname string) (User, error)
-	GetVideoClassByID(ctx context.Context, id int32) (VideoClass, error)
+	GetVideoByID(ctx context.Context, id int64) (Video, error)
+	SearchPostByTag(ctx context.Context, concat interface{}) ([]int32, error)
+	SearchPostByTitle(ctx context.Context, arg SearchPostByTitleParams) ([]Post, error)
+	TestGetAll(ctx context.Context, arg TestGetAllParams) ([]TestGetAllRow, error)
 	TodayEmailCount(ctx context.Context, email string) (int64, error)
 	UpdateAvatar(ctx context.Context, arg UpdateAvatarParams) error
 	UpdateNickName(ctx context.Context, arg UpdateNickNameParams) (sql.Result, error)
+	UpdatePostInfo(ctx context.Context, arg UpdatePostInfoParams) error
 	UpdateProfile(ctx context.Context, arg UpdateProfileParams) error
+	UpdateVideoLink(ctx context.Context, arg UpdateVideoLinkParams) error
 }
 
 var _ Querier = (*Queries)(nil)

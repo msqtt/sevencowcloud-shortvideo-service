@@ -12,7 +12,7 @@ CREATE TABLE `captcha` (
   `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `email` varchar(255) NOT NULL,
   `captcha` char(8) NOT NULL,
-  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '验证码是否被删除, 0 表示否 1 表示是',
+  `is_deleted` tinyint NOT NULL DEFAULT 0 COMMENT '激活码是否被删除, 0 表示否 1 表示是',
   `expired_at` timestamp NOT NULL
 );
 
@@ -61,7 +61,6 @@ CREATE TABLE `posts` (
   `description` varchar(255) NOT NULL,
   `user_id` bigint NOT NULL,
   `video_id` bigint NOT NULL,
-  `video_class_id` int NOT NULL,
   `is_deleted` tinyint NOT NULL COMMENT '0 表示否 1 表示是',
   `updated_at` timestamp NOT NULL DEFAULT (now()),
   `created_at` timestamp NOT NULL
@@ -82,9 +81,9 @@ CREATE TABLE `collections` (
 );
 
 CREATE TABLE `post_tag` (
-  `id` bigint,
   `post_id` bigint NOT NULL,
-  `tag_content` varchar(255)
+  `tag_id` int NOT NULL,
+  PRIMARY KEY (`post_id`, `tag_id`)
 );
 
 CREATE TABLE `user_upload` (
@@ -96,11 +95,13 @@ CREATE TABLE `user_upload` (
 
 CREATE TABLE `videos` (
   `id` bigint PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  `cover_link` varchar(255) NOT NULL,
+  `src_link` varchar(255) NOT NULL,
   `content_hash` char NOT NULL,
   `updated_at` timestamp NOT NULL
 );
 
-CREATE TABLE `video_class` (
+CREATE TABLE `tags` (
   `id` int PRIMARY KEY NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
@@ -135,8 +136,6 @@ ALTER TABLE `posts` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `posts` ADD FOREIGN KEY (`video_id`) REFERENCES `videos` (`id`);
 
-ALTER TABLE `posts` ADD FOREIGN KEY (`video_class_id`) REFERENCES `video_class` (`id`);
-
 ALTER TABLE `user_collect_folder` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `collections` ADD FOREIGN KEY (`folder_id`) REFERENCES `user_collect_folder` (`id`);
@@ -144,6 +143,8 @@ ALTER TABLE `collections` ADD FOREIGN KEY (`folder_id`) REFERENCES `user_collect
 ALTER TABLE `collections` ADD FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`);
 
 ALTER TABLE `post_tag` ADD FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`);
+
+ALTER TABLE `post_tag` ADD FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`);
 
 ALTER TABLE `user_upload` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

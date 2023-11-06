@@ -14,7 +14,8 @@ gen:
 		api/protos/v1/user/*.proto \
 		api/protos/v1/profile/*.proto \
 		api/protos/v1/follow/*.proto \
-		api/protos/v1/video/*.proto 
+		api/protos/v1/video/*.proto \
+		api/protos/v1/post/*.proto 
 sqlc:
 	sqlc generate -f configs/sqlc.yaml
 dev-up:
@@ -29,7 +30,7 @@ migrate-up:
 migrate-down:
 	migrate -path internal/db/migration/ -database "$(URL_DB)" down
 cowserver:
-	CGO_ENABLED=0 GOARCH="amd64" go build -o $(EXE_NAME) cmd/server/main.go
+	CGO_ENABLED=0 GOARCH="amd64" go build -ldflags="-w -s" -o $(EXE_NAME) cmd/server/main.go
 migrate-test-up:
 	migrate -path internal/db/migration/ -database "$(TEST_URL_DB)" up
 migrate-test-down:

@@ -26,6 +26,8 @@ type Config struct {
 	KodoBucket        string        `mapstructure:"KODO_BUCKET"`
 	QiniuAK           string        `mapstructure:"QINIU_AK"`
 	QiniuSK           string        `mapstructure:"QINIU_SK"`
+	ImageLimit        int64         `mapstructure:"IMAGE_LIMIT"`
+	VideoLimit        int64         `mapstructure:"Video_Limit"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

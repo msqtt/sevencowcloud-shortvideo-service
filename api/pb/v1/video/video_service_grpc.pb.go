@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type VideoServiceClient interface {
-	ListVideoClass(ctx context.Context, in *ListVideoClassRequest, opts ...grpc.CallOption) (*ListVideoClassResponse, error)
+	ListVideoTag(ctx context.Context, in *ListVideoTagRequest, opts ...grpc.CallOption) (*ListVideoTagResponse, error)
 }
 
 type videoServiceClient struct {
@@ -33,9 +33,9 @@ func NewVideoServiceClient(cc grpc.ClientConnInterface) VideoServiceClient {
 	return &videoServiceClient{cc}
 }
 
-func (c *videoServiceClient) ListVideoClass(ctx context.Context, in *ListVideoClassRequest, opts ...grpc.CallOption) (*ListVideoClassResponse, error) {
-	out := new(ListVideoClassResponse)
-	err := c.cc.Invoke(ctx, "/video.v1.VideoService/ListVideoClass", in, out, opts...)
+func (c *videoServiceClient) ListVideoTag(ctx context.Context, in *ListVideoTagRequest, opts ...grpc.CallOption) (*ListVideoTagResponse, error) {
+	out := new(ListVideoTagResponse)
+	err := c.cc.Invoke(ctx, "/video.v1.VideoService/ListVideoTag", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (c *videoServiceClient) ListVideoClass(ctx context.Context, in *ListVideoCl
 // All implementations must embed UnimplementedVideoServiceServer
 // for forward compatibility
 type VideoServiceServer interface {
-	ListVideoClass(context.Context, *ListVideoClassRequest) (*ListVideoClassResponse, error)
+	ListVideoTag(context.Context, *ListVideoTagRequest) (*ListVideoTagResponse, error)
 	mustEmbedUnimplementedVideoServiceServer()
 }
 
@@ -54,8 +54,8 @@ type VideoServiceServer interface {
 type UnimplementedVideoServiceServer struct {
 }
 
-func (UnimplementedVideoServiceServer) ListVideoClass(context.Context, *ListVideoClassRequest) (*ListVideoClassResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListVideoClass not implemented")
+func (UnimplementedVideoServiceServer) ListVideoTag(context.Context, *ListVideoTagRequest) (*ListVideoTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListVideoTag not implemented")
 }
 func (UnimplementedVideoServiceServer) mustEmbedUnimplementedVideoServiceServer() {}
 
@@ -70,20 +70,20 @@ func RegisterVideoServiceServer(s grpc.ServiceRegistrar, srv VideoServiceServer)
 	s.RegisterService(&VideoService_ServiceDesc, srv)
 }
 
-func _VideoService_ListVideoClass_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListVideoClassRequest)
+func _VideoService_ListVideoTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListVideoTagRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VideoServiceServer).ListVideoClass(ctx, in)
+		return srv.(VideoServiceServer).ListVideoTag(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/video.v1.VideoService/ListVideoClass",
+		FullMethod: "/video.v1.VideoService/ListVideoTag",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VideoServiceServer).ListVideoClass(ctx, req.(*ListVideoClassRequest))
+		return srv.(VideoServiceServer).ListVideoTag(ctx, req.(*ListVideoTagRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -96,8 +96,8 @@ var VideoService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*VideoServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ListVideoClass",
-			Handler:    _VideoService_ListVideoClass_Handler,
+			MethodName: "ListVideoTag",
+			Handler:    _VideoService_ListVideoTag_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

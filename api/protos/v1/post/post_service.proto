@@ -4,8 +4,31 @@ package post.v1;
 option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/post;pb_pst";
 
 import "google/api/annotations.proto";
+import "post/post.proto";
+import "post/post_message.proto";
+
+message TestGetRecommendPostRequest {
+	int32 page_size = 1;
+	int32 page_index = 2;
+}
+
+message TestGetRecommendPostResponse {
+	int32	total = 1;
+	int32 page_size = 2;
+	int32 page_pos = 3;
+	repeated PostItem post_items = 4;
+}
 
 service PostService {
-	rpc PostService() returns () {
+	rpc UploadPost(UploadPostRequest) returns (UploadPostResponse) {
+		option (google.api.http) = {
+			post: "/v1/post/{video_id}"
+			body: "*"
+		};
+	}
+	rpc TestGetRecommendPost(TestGetRecommendPostRequest) returns (TestGetRecommendPostResponse) {
+		option (google.api.http) = {
+			get: "/v1/post/recommend"
+		};
 	}
 }

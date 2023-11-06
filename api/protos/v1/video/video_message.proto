@@ -1,0 +1,4 @@
+syntax = "proto3";
+
+package video.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/video;pb_vid";

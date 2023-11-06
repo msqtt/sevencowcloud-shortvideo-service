@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"path/filepath"
 	"time"
 
 	pb_prf "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile"
@@ -19,29 +18,7 @@ type ProfileServer struct {
 	pb_prf.UnimplementedProfileServiceServer
 	config config.Config
 	store  db.Store
-}
-
-// GetProfile implements pb_prf.ProfileServiceServer.
-func (ps *ProfileServer) GetProfile(ctx context.Context, req *pb_prf.GetProfileRequest) (
-	*pb_prf.GetProfileResponse, error) {
-	id := req.GetUserId()
-	u, err := ps.store.GetUserByID(ctx, id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, status.Errorf(codes.NotFound, "no such user")
-		}
-		log.Println(err)
-		return nil, status.Errorf(codes.Internal, "failed to find user")
-	}
-	
-	p, err := ps.store.GetProfile(ctx, u.ProfileID)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to find profile")
-	}
-	p2 := db2pbProfile(&p)
-	p2.AvatarLink = filepath.Join(ps.config.KodoLink, p2.AvatarLink)
-	gpr := &pb_prf.GetProfileResponse{Profile: p2}
-	return gpr, nil
+	token  token.TokenMaker
 }
 
 // UpdateProfile implements pb_prf.ProfileServiceServer.
@@ -65,12 +42,12 @@ func (ps *ProfileServer) UpdateProfile(ctx context.Context, req *pb_prf.UpdatePr
 	}
 
 	params := db.UpdateProfileParams{
-		RealName: sql.NullString{String: req.GetRealName(), Valid: true},
-		Mood: sql.NullString{String: req.GetMood(), Valid: true},
-		Gender: db.NullProfilesGender{ProfilesGender: db.ProfilesGender(req.GetGender().String()), Valid: true},
-		BirthDate: sql.NullTime{Time: time.Unix(req.GetBirthDate(), 0), Valid: true},
+		RealName:     sql.NullString{String: req.GetRealName(), Valid: true},
+		Mood:         sql.NullString{String: req.GetMood(), Valid: true},
+		Gender:       db.NullProfilesGender{ProfilesGender: db.ProfilesGender(req.GetGender().String()), Valid: true},
+		BirthDate:    sql.NullTime{Time: time.Unix(req.GetBirthDate(), 0), Valid: true},
 		Introduction: sql.NullString{String: req.GetIntroduction(), Valid: true},
-		ID: u.ID,
+		ID:           u.ID,
 	}
 
 	err2 := ps.store.UpdateProfile(ctx, params)
@@ -79,26 +56,26 @@ func (ps *ProfileServer) UpdateProfile(ctx context.Context, req *pb_prf.UpdatePr
 		return nil, status.Errorf(codes.Internal, "failed to update profile")
 	}
 
-	p2, err := ps.store.GetProfile(ctx, u.ProfileID)
+	p2, err := ps.store.GetProfileByID(ctx, u.ProfileID)
 	if err != nil {
 		log.Println(err)
-		return nil, status.Errorf(codes.Internal, "failed to find updated profile")		
+		return nil, status.Errorf(codes.Internal, "failed to find updated profile")
 	}
 
-	p3 := db2pbProfile(&p2)
-	p3.AvatarLink = filepath.Join(ps.config.KodoLink, p3.AvatarLink)
+	p3 := db2pbProfile(ps.config, p2)
 	res := &pb_prf.UpdateProfileResponse{
 		Profile: p3,
 	}
-	return res, nil	
+	return res, nil
 }
 
 var _ pb_prf.ProfileServiceServer = (*ProfileServer)(nil)
 
 // NewProfileServer creates a profile server then return it.
-func NewProfileServer(conf config.Config, store db.Store) *ProfileServer {
+func NewProfileServer(conf config.Config, token token.TokenMaker, store db.Store) *ProfileServer {
 	return &ProfileServer{
 		config: conf,
+		token:  token,
 		store:  store,
 	}
 }

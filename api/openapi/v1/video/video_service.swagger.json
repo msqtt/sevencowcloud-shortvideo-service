@@ -16,14 +16,14 @@
     "application/json"
   ],
   "paths": {
-    "/v1/video/class": {
+    "/v1/video/tags": {
       "get": {
-        "operationId": "VideoService_ListVideoClass",
+        "operationId": "VideoService_ListVideoTag",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1ListVideoClassResponse"
+              "$ref": "#/definitions/v1ListVideoTagResponse"
             }
           },
           "default": {
@@ -68,24 +68,24 @@
         }
       }
     },
-    "v1ListVideoClassResponse": {
+    "v1ListVideoTagResponse": {
       "type": "object",
       "properties": {
-        "videoClass": {
+        "tags": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/v1VideoClass"
+            "$ref": "#/definitions/v1Tag"
           }
         }
       }
     },
-    "v1VideoClass": {
+    "v1Tag": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "int64"
+        "tagId": {
+          "type": "integer",
+          "format": "int32"
         },
         "name": {
           "type": "string"

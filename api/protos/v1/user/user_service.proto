@@ -7,6 +7,7 @@ import "google/api/annotations.proto";
 import "user/login_message.proto";
 import "user/register_message.proto";
 import "user/captcha_message.proto";
+import "user/user_message.proto";
 
 service AuthService {
 	rpc LoginUser(LoginUserRequest) returns (LoginUserResponse) {
@@ -25,6 +26,14 @@ service AuthService {
 		option (google.api.http) = {
 			post: "/v1/auth/captcha"
       body: "*"
+		};
+	}
+}
+
+service UserService {
+	rpc GetUserProfile(GetUserProfileRequest) returns (GetUserProfileResponse) {
+		option (google.api.http) = {
+			get: "/v1/user/{user_id}"
 		};
 	}
 }

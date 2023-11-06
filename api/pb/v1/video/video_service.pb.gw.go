@@ -31,20 +31,20 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_VideoService_ListVideoClass_0(ctx context.Context, marshaler runtime.Marshaler, client VideoServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListVideoClassRequest
+func request_VideoService_ListVideoTag_0(ctx context.Context, marshaler runtime.Marshaler, client VideoServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListVideoTagRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := client.ListVideoClass(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.ListVideoTag(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_VideoService_ListVideoClass_0(ctx context.Context, marshaler runtime.Marshaler, server VideoServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListVideoClassRequest
+func local_request_VideoService_ListVideoTag_0(ctx context.Context, marshaler runtime.Marshaler, server VideoServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq ListVideoTagRequest
 	var metadata runtime.ServerMetadata
 
-	msg, err := server.ListVideoClass(ctx, &protoReq)
+	msg, err := server.ListVideoTag(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -55,7 +55,7 @@ func local_request_VideoService_ListVideoClass_0(ctx context.Context, marshaler 
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterVideoServiceHandlerFromEndpoint instead.
 func RegisterVideoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server VideoServiceServer) error {
 
-	mux.Handle("GET", pattern_VideoService_ListVideoClass_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_VideoService_ListVideoTag_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -63,12 +63,12 @@ func RegisterVideoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/video.v1.VideoService/ListVideoClass", runtime.WithHTTPPathPattern("/v1/video/class"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/video.v1.VideoService/ListVideoTag", runtime.WithHTTPPathPattern("/v1/video/tags"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_VideoService_ListVideoClass_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_VideoService_ListVideoTag_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -76,7 +76,7 @@ func RegisterVideoServiceHandlerServer(ctx context.Context, mux *runtime.ServeMu
 			return
 		}
 
-		forward_VideoService_ListVideoClass_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VideoService_ListVideoTag_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -121,25 +121,25 @@ func RegisterVideoServiceHandler(ctx context.Context, mux *runtime.ServeMux, con
 // "VideoServiceClient" to call the correct interceptors.
 func RegisterVideoServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client VideoServiceClient) error {
 
-	mux.Handle("GET", pattern_VideoService_ListVideoClass_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("GET", pattern_VideoService_ListVideoTag_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/video.v1.VideoService/ListVideoClass", runtime.WithHTTPPathPattern("/v1/video/class"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/video.v1.VideoService/ListVideoTag", runtime.WithHTTPPathPattern("/v1/video/tags"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_VideoService_ListVideoClass_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_VideoService_ListVideoTag_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_VideoService_ListVideoClass_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_VideoService_ListVideoTag_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -147,9 +147,9 @@ func RegisterVideoServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_VideoService_ListVideoClass_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "video", "class"}, ""))
+	pattern_VideoService_ListVideoTag_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "video", "tags"}, ""))
 )
 
 var (
-	forward_VideoService_ListVideoClass_0 = runtime.ForwardResponseMessage
+	forward_VideoService_ListVideoTag_0 = runtime.ForwardResponseMessage
 )

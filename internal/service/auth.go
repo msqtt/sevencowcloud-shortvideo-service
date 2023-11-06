@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"path/filepath"
 	"time"
 
 	pb_usr "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user"
@@ -30,6 +29,20 @@ type AuthServer struct {
 func (as *AuthServer) SendCaptcha(ctx context.Context, req *pb_usr.SendCaptchaRequest) (
 	*pb_usr.SendCaptchaResponse, error) {
 	email := req.GetEmail()
+	if len(email) == 0 {
+		return nil, status. Errorf(codes.InvalidArgument, "no an email")	
+	}
+
+	_, err := as.store.GetUserByEmail(ctx, email)
+	if err == nil {
+		return nil, status.Errorf(codes.AlreadyExists, "the email already be used")
+	}
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Println(err)
+			return nil, status.Errorf(codes.Internal, "failed to find user")
+		}
+	}
 
 	cnt, err := as.store.TodayEmailCount(ctx, email)
 	if err != nil {
@@ -56,12 +69,11 @@ func (as *AuthServer) SendCaptcha(ctx context.Context, req *pb_usr.SendCaptchaRe
 
 	// open a goroutine to send an email
 	m := extractMetadata(ctx)
-	go func() {
-		err := as.mail.SendActivateEmail(email, code, m.ClientIP)
-		if err != nil {
-			log.Println(err)
-		}
-	}()
+	err = as.mail.SendActivateEmail(email, code, m.ClientIP)
+	if err != nil {
+		log.Println(err)
+		return nil, status.Errorf(codes.Unknown, "failed to send email")
+	}
 
 	return &pb_usr.SendCaptchaResponse{
 		TodayLeftTimes: left,
@@ -94,13 +106,12 @@ func (as *AuthServer) LoginUser(ctx context.Context, req *pb_usr.LoginUserReques
 		return nil, status.Errorf(codes.Internal, "cannot access token")
 	}
 	// query profile.
-	p, err4 := as.store.GetProfile(ctx, u.ProfileID)
+	p, err4 := as.store.GetProfileByID(ctx, u.ProfileID)
 	if err4 != nil {
 		log.Println(err4)
 		return nil, status.Errorf(codes.Internal, "failed to find profile")
 	}
-	u2 := db2pbUser(u, &p)
-	u2.Profile.AvatarLink = filepath.Join(as.config.KodoLink, u2.Profile.AvatarLink)
+	u2 := db2pbUser(as.config, u, p)
 	lur := &pb_usr.LoginUserResponse{Token: token, User: u2}
 	return lur, nil
 }
@@ -173,9 +184,9 @@ func (as *AuthServer) RegisterUser(ctx context.Context, req *pb_usr.RegisterUser
 		return nil, status.Errorf(codes.Internal, "failed to create user")
 	}
 
-	link := filepath.Join(as.config.KodoLink, "img/avatar/default.png")
-	u := db2pbUser(cutr.User, &db.Profile{UpdatedAt: time.Now(), AvatarLink: sql.NullString{
-		String: link, Valid: true}})
+	u := db2pbUser(as.config, cutr.User,
+		db.Profile{UpdatedAt: time.Now(),
+			AvatarLink: sql.NullString{String: "img/avatar/default.png", Valid: true}})
 	rur := &pb_usr.RegisterUserResponse{User: u}
 	return rur, nil
 }

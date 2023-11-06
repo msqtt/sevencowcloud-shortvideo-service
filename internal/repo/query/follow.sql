@@ -9,6 +9,14 @@ WHERE following_user_id = ?
 AND followed_user_id = ?
 LIMIT 1;
 
+-- name: CountFollowing :one
+SELECT count(*) following_cnt FROM follows
+WHERE following_user_id = ?;
+
+-- name: CountFollowed :one
+SELECT count(*) followed_cnt FROM follows
+WHERE followed_user_id = ?;
+
 -- name: GetFollowingList :many
 SELECT followed_at, u.id, u.nickname, u.email, u.created_at, p.real_name, p.mood, p.gender,
 	p.birth_date, p.introduction, p.avatar_link

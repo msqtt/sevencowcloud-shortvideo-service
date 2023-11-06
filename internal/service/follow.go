@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"log"
-	"path/filepath"
 	"time"
 
 	pb_fl "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/follow"
@@ -59,18 +58,17 @@ func (lf *FollowServer) FollowedList(ctx context.Context, req *pb_fl.FollowedLis
 		}
 		ui := &pb_usr.UserItem{
 			IsFollowed: isFollow,
-			User: db2pbUser(db.User{ID: row.ID, Nickname: row.Nickname, Email: row.Email},
-				&db.Profile{RealName: row.RealName, Mood: row.Mood, Gender: row.Gender,
+			User: db2pbUser(lf.config,
+				db.User{ID: row.ID, Nickname: row.Nickname, Email: row.Email},
+				db.Profile{RealName: row.RealName, Mood: row.Mood, Gender: row.Gender,
 					BirthDate: row.BirthDate, Introduction: row.Introduction,
-					AvatarLink: sql.NullString{String: filepath.Join(lf.config.KodoLink,
-						row.AvatarLink.String),
-						Valid: true}},
+					AvatarLink: sql.NullString{String: row.AvatarLink.String, Valid: true}},
 			),
 		}
 		uis[i] = ui
 	}
 	ret := &pb_fl.FollowedListResponse{
-		Users: uis,
+		UserItems: uis,
 	}
 	return ret, nil
 }
@@ -111,18 +109,17 @@ func (lf *FollowServer) FollowingList(ctx context.Context, req *pb_fl.FollowingL
 		}
 		ui := &pb_usr.UserItem{
 			IsFollowed: isFollow,
-			User: db2pbUser(db.User{ID: row.ID, Nickname: row.Nickname, Email: row.Email},
-				&db.Profile{RealName: row.RealName, Mood: row.Mood, Gender: row.Gender,
+			User: db2pbUser(lf.config,
+				db.User{ID: row.ID, Nickname: row.Nickname, Email: row.Email},
+				db.Profile{RealName: row.RealName, Mood: row.Mood, Gender: row.Gender,
 					BirthDate: row.BirthDate, Introduction: row.Introduction,
-					AvatarLink: sql.NullString{String: filepath.Join(lf.config.KodoLink,
-						row.AvatarLink.String),
-						Valid: true}},
+					AvatarLink: sql.NullString{String: row.AvatarLink.String, Valid: true}},
 			),
 		}
 		uis[i] = ui
 	}
 	ret := &pb_fl.FollowingListResponse{
-		Users: uis,
+		UserItems: uis,
 	}
 	return ret, nil
 }
@@ -187,8 +184,14 @@ func (fl *FollowServer) FollowUser(ctx context.Context, req *pb_fl.FollowUserReq
 		log.Println(err)
 		return nil, status.Errorf(codes.Internal, "failed to follow")
 	}
+
+	i, err2 := fl.store.CountFollowed(ctx, followedId)
+	if err2 != nil {
+		return nil, status.Errorf(codes.Internal, "failed to count followed")
+	}
 	return &pb_fl.FollowUserResponse{
-		FollowedAt: time.Now().Unix(),
+		FollowedNum: i,
+		FollowedAt:  time.Now().Unix(),
 	}, nil
 }
 
@@ -217,7 +220,15 @@ func (fl *FollowServer) UnFollowUser(ctx context.Context, req *pb_fl.UnFollowUse
 		log.Println(err2)
 		return nil, status.Errorf(codes.Internal, "failed to unfollow user")
 	}
-	return &pb_fl.UnFollowUserResponse{Now: time.Now().Unix()}, nil
+
+	i, err3 := fl.store.CountFollowed(ctx, followedId)
+	if err3 != nil {
+		return nil, status.Errorf(codes.Internal, "failed to count follow")
+	}
+	return &pb_fl.UnFollowUserResponse{
+		FollowedNum: i,
+		Now:         time.Now().Unix(),
+	}, nil
 }
 
 var _ pb_fl.FollowServiceServer = (*FollowServer)(nil)

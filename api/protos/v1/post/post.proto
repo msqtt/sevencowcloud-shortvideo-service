@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package post.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/post;pb_pst";
+import "video/video.proto";
+
+message Post {
+	int64 post_id = 1; 
+  string title = 2;
+  string description = 3;
+  int64 user_id = 4;
+	repeated video.v1.Tag tags = 5;
+	video.v1.Video video = 6;
+  int64 updated_at = 7;
+  int64 created_at = 8;
+}
+
+message PostItem {
+	Post post = 1;
+	bool is_liked = 2;
+	bool is_collected = 3;
+	bool is_shared = 4;
+	int32 liked_num = 5;
+	int32 collected_num = 6;
+	int32 shared_num = 7;
+}

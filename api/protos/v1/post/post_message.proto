@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package post.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/post;pb_pst";
+import "post/post.proto";
+
+message UploadPostRequest {
+	string title = 1;
+	string description = 2;
+	int64 user_id = 3;
+	repeated int32 tag_ids = 4;
+	int64 video_id = 5;
+}
+
+message UploadPostResponse {
+	PostItem post_item = 1;
+}

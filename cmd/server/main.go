@@ -10,9 +10,11 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	pb_fl "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/follow"
+	pb_pst "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/post"
 	pb_prf "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/profile"
 	pb_usr "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user"
 	pb_vid "github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/video"
+	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/oss"
 	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/pkg/config"
 	db "github.com/msqtt/sevencowcloud-shortvideo-service/internal/repo/sqlc"
 	"github.com/msqtt/sevencowcloud-shortvideo-service/internal/service"
@@ -44,10 +46,15 @@ func main() {
 	if err2 != nil {
 		log.Fatal(err2)
 	}
+
+	kodo := oss.NewKodo(conf.KodoHttps, conf.KodoCDN, conf.QiniuAK, conf.QiniuSK)
+
 	// new service server
 	authServer := service.NewAuthServer(conf, pm, store)
-	profileServer := service.NewProfileServer(conf, store)
-	fileServer := service.NewFileService(conf, pm, store)
+	userServer := service.NewUserServer(conf, pm, store)
+	profileServer := service.NewProfileServer(conf, pm, store)
+	fileServer := service.NewFileService(conf, pm, store, kodo)
+	postServer := service.NewPostServer(conf, pm, store, kodo)
 	followServer := service.NewFollowServer(conf, pm, store)
 	videoServer := service.NewVideoServer(conf, pm, store)
 
@@ -56,6 +63,7 @@ func main() {
 		"/profile.v1.ProfileService/UpdateProfile",
 		"/follow.v1.FollowService/FollowUser",
 		"/follow.v1.FollowService/UnFollowUser",
+		"/post.v1.PostService/UploadPost",
 	)
 
 	// start listen server
@@ -68,7 +76,9 @@ func main() {
 		log.Fatal(err)
 	}
 	go func() {
-		log.Fatalln(runGRPCServer(authServer, profileServer, followServer, videoServer, ai, false, listenGrpc))
+		log.Fatalln(runGRPCServer(authServer, profileServer, followServer, userServer,
+			videoServer, postServer,
+			ai, false, listenGrpc))
 	}()
 	// http gateway
 	log.Fatalln(runRESTServer(fileServer, false, listenREST, listenGrpc))
@@ -78,7 +88,9 @@ func runGRPCServer(
 	authServer pb_usr.AuthServiceServer,
 	profileServer pb_prf.ProfileServiceServer,
 	followServer pb_fl.FollowServiceServer,
+	userServer pb_usr.UserServiceServer,
 	videoServer pb_vid.VideoServiceServer,
+	postServer pb_pst.PostServiceServer,
 	authInerceptor *service.AuthInterceptor,
 	enableTLS bool,
 	listener net.Listener,
@@ -86,9 +98,11 @@ func runGRPCServer(
 
 	server := grpc.NewServer(grpc.UnaryInterceptor(authInerceptor.Unary()))
 	pb_usr.RegisterAuthServiceServer(server, authServer)
+	pb_usr.RegisterUserServiceServer(server, userServer)
 	pb_prf.RegisterProfileServiceServer(server, profileServer)
 	pb_fl.RegisterFollowServiceServer(server, followServer)
 	pb_vid.RegisterVideoServiceServer(server, videoServer)
+	pb_pst.RegisterPostServiceServer(server, postServer)
 
 	// for registering explore grpc api.
 	reflection.Register(server)
@@ -105,6 +119,10 @@ func runRESTServer(
 ) error {
 	mux := runtime.NewServeMux()
 	err2 := mux.HandlePath("PUT", "/v1/file/avatar/{user_id}", fs.UploadAvatar)
+	if err2 != nil {
+		return err2
+	}
+	err2 = mux.HandlePath("POST", "/v1/file/video", fs.UploadVideo)
 	if err2 != nil {
 		return err2
 	}
@@ -131,6 +149,10 @@ func runRESTServer(
 	if err != nil {
 		return err
 	}
+	err = pb_usr.RegisterUserServiceHandler(ctx, mux, conn)
+	if err != nil {
+		return err
+	}
 	err = pb_prf.RegisterProfileServiceHandler(ctx, mux, conn)
 	if err != nil {
 		return err
@@ -140,6 +162,10 @@ func runRESTServer(
 		return err
 	}
 	err = pb_vid.RegisterVideoServiceHandler(ctx, mux, conn)
+	if err != nil {
+		return err
+	}
+	err = pb_pst.RegisterPostServiceHandler(ctx, mux, conn)
 	if err != nil {
 		return err
 	}

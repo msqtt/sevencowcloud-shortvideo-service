@@ -1,14 +1,16 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"image"
-	"io/ioutil"
+	"mime"
+	"mime/multipart"
 	"path/filepath"
+	"time"
 
 	_ "image/gif"
 	_ "image/jpeg"
@@ -34,8 +36,8 @@ type FileServer struct {
 	store db.Store
 }
 
-func NewFileService(conf config.Config, token token.TokenMaker, store db.Store) *FileServer {
-	kodo := oss.NewKodo(conf.KodoHttps, conf.KodoCDN, conf.QiniuAK, conf.QiniuSK)
+func NewFileService(conf config.Config, token token.TokenMaker, store db.Store,
+kodo *oss.Kodo) *FileServer {
 	return &FileServer{
 		conf:  conf,
 		token: token,
@@ -75,6 +77,168 @@ func (fs *FileServer) authHandleWrap(w http.ResponseWriter,
 	handler(w, r2, pathParams)
 }
 
+func (fs *FileServer) UploadVideo(w http.ResponseWriter,
+	r *http.Request, pathParams map[string]string) {
+	fs.authHandleWrap(w, r, pathParams,
+		func(w http.ResponseWriter, r *http.Request, pathParams map[string]string) {
+			ctx := r.Context()
+			payload := ctx.Value("payload").(*token.Payload)
+
+			u, err := fs.store.GetUserByID(ctx, payload.UserID)
+			if err != nil {
+				if err == sql.ErrNoRows {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write(BadResultMap(codes.Unauthenticated, "user not found"))
+					return
+				}
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to find user"))
+				return
+			}
+
+			var allSize int64 = fs.conf.VideoLimit << 20
+			var coverSize int64 = fs.conf.ImageLimit << 20
+
+			// 2G limit
+			r.Body = http.MaxBytesReader(w, r.Body, allSize)
+
+			// get multipart file
+			err = r.ParseMultipartForm(allSize)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				maxErr := &http.MaxBytesError{}
+				if errors.As(err, &maxErr) {
+					w.Write(BadResultMap(codes.OutOfRange, "total file size exceeds limit"))
+					return
+				}
+				w.Write(BadResultMap(codes.InvalidArgument, "cannot parse multipart  file"))
+				return
+			}
+
+			fh := r.MultipartForm.File["cover"]
+			var coverKey string
+			if len(fh) > 0 {
+				if fh[0].Size > coverSize {
+					w.WriteHeader(http.StatusBadRequest)
+					w.Write(BadResultMap(codes.OutOfRange, "cover size exceeds limit"))
+					return
+				}
+				coverFile, err := fh[0].Open()
+				if err != nil {
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write(BadResultMap(codes.Internal, "failed to read cover file"))
+					return
+				}
+				defer coverFile.Close()
+
+				coverKey, err = fs.UploadImg(ctx, fmt.Sprintf("tmp/cover/%d-", u.ID), coverFile)
+				if err != nil {
+					log.Println(err)
+					w.WriteHeader(http.StatusInternalServerError)
+					w.Write(BadResultMap(codes.Internal, "failed to upload cover file"))
+					return
+				}
+			}
+
+			fh2 := r.MultipartForm.File["video"]
+			if len(fh2) == 0 {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write(BadResultMap(codes.InvalidArgument, "no file uploaded"))
+				return
+			}
+
+			f, err2 := fh2[0].Open()
+			if err2 != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to open video file"))
+				return
+			}
+			defer f.Close()
+
+			headByte := make([]byte, 512)
+			if _, err4 := f.Read(headByte); err4 != nil {
+				log.Println(err4)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to read video file"))
+				return
+			}
+			exts, err3 := mime.ExtensionsByType(http.DetectContentType(headByte))
+			if err3  != nil{
+				log.Println(err3)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to get extension"))
+			}
+			// todo
+			extension := exts[1]
+
+			nanoid, err3 := gonanoid.New()
+			if err3 != nil {
+				log.Println(err3)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to read file"))
+				return
+			}
+
+			_, err4 := f.Seek(0, 0)
+			if err4 != nil {
+				log.Println(err4)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to seek video file"))
+				return
+			}
+
+			key := fmt.Sprintf("tmp/video/%d-%s%s",u.ID, nanoid, extension)
+
+			// log.Println(fs.conf.KodoBucket, key, extension, f)
+			// upload video file shit
+			_, err = fs.kodo.UploadDataByForm(ctx, fs.conf.KodoBucket, key, f)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to upload video file"))
+				return
+			}
+
+			if len(coverKey) == 0 {
+				coverKey = fmt.Sprintf("tmp/cover/%d-%s.jpg", u.ID, nanoid)
+			}
+			// insert video table and get video cover
+			param := db.AddVideoParams{
+				CoverLink:   coverKey,
+				SrcLink:     key,
+			}
+
+			result, err := fs.store.AddVideo(ctx, param)
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to add video"))
+				return
+			}
+			id, err := result.LastInsertId()
+			if err != nil {
+				log.Println(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write(BadResultMap(codes.Internal, "failed to get video id"))
+				return
+			}
+
+			clink := uriPath(fs.conf.KodoLink, coverKey)
+			slink := uriPath(fs.conf.KodoLink, key)
+			ret := make(map[string]any)
+			ret["videoId"] = id
+			ret["coverLink"] = clink
+			ret["srcLink"] = slink
+			ret["updatedAt"] = strconv.FormatInt(time.Now().Unix(), 10)
+			b, _ := json.Marshal(ret)
+			w.WriteHeader(http.StatusOK)
+			w.Write(b)
+		},
+	)
+}
+
 // UploadAvatar overwrites user's avatar using received form multipart file.
 func (fs *FileServer) UploadAvatar(w http.ResponseWriter,
 	r *http.Request, pathParams map[string]string) {
@@ -85,7 +249,7 @@ func (fs *FileServer) UploadAvatar(w http.ResponseWriter,
 			if err != nil {
 				log.Println(err)
 				w.WriteHeader(http.StatusBadRequest)
-				w.Write(BadResultMap(codes.InvalidArgument, "wrong farmat of user id"))
+				w.Write(BadResultMap(codes.InvalidArgument, "wrong format of user id"))
 				return
 			}
 			ctx := r.Context()
@@ -110,18 +274,26 @@ func (fs *FileServer) UploadAvatar(w http.ResponseWriter,
 			}
 
 			// limit body size 2MB
-			var size int64 = 2 << 20
-			http.MaxBytesReader(w, r.Body, size)
+			var size int64 = fs.conf.ImageLimit << 20
+
+			r.Body = http.MaxBytesReader(w, r.Body, size)
+
 			// get multipart file
 			err = r.ParseMultipartForm(size)
 			if err != nil {
-				w.WriteHeader(http.StatusNoContent)
-				w.Write(BadResultMap(codes.InvalidArgument, "cannot parse multipart form"))
+				log.Println(err)
+				w.WriteHeader(http.StatusBadRequest)
+				maxErr := &http.MaxBytesError{}
+				if errors.As(err, &maxErr) {
+					w.Write(BadResultMap(codes.OutOfRange, "image file size exceeds limit"))
+					return
+				}
+				w.Write(BadResultMap(codes.InvalidArgument, "cannot parse multipart  file"))
 				return
 			}
-			fh := r.MultipartForm.File["file"]
+			fh := r.MultipartForm.File["avatar"]
 			if len(fh) == 0 {
-				w.WriteHeader(http.StatusNoContent)
+				w.WriteHeader(http.StatusBadRequest)
 				w.Write(BadResultMap(codes.InvalidArgument, "no file uploaded"))
 				return
 			}
@@ -133,32 +305,13 @@ func (fs *FileServer) UploadAvatar(w http.ResponseWriter,
 				w.Write(BadResultMap(codes.Internal, "failed to read file"))
 				return
 			}
-			b2, _ := ioutil.ReadAll(f)
-			buf1 := bytes.NewBuffer(b2)
-			buf2 := bytes.NewBuffer(b2)
+			defer f.Close()
 
-			_, imgType, err := image.DecodeConfig(buf1)
-			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
-				w.Write(BadResultMap(codes.InvalidArgument, "unknown image type"))
-				return
-			}
-
-			nanoid, err := gonanoid.New()
-			if err != nil {
-				log.Println(err)
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(BadResultMap(codes.Internal, "failed to generate random id"))
-				return
-			}
-
-			// save to oss
-			key := fmt.Sprintf("img/avatar/%s.%s", nanoid, imgType)
-			_, err2 := fs.kodo.UploadDataByForm(ctx, fs.conf.KodoBucket, key, buf2)
+			key, err2 := fs.UploadImg(ctx, "img/avatar/", f)
 			if err2 != nil {
 				log.Println(err2)
 				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(BadResultMap(codes.Internal, "cannot save file"))
+				w.Write(BadResultMap(codes.Internal, "failed to upload avatar"))
 				return
 			}
 
@@ -181,4 +334,26 @@ func (fs *FileServer) UploadAvatar(w http.ResponseWriter,
 			w.WriteHeader(http.StatusOK)
 			w.Write(b)
 		})
+}
+
+func (fs *FileServer) UploadImg(ctx context.Context, path string, file multipart.File) (string, error) {
+	_, imgType, err := image.DecodeConfig(file)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err = file.Seek(0, 0); err != nil {
+		return "", nil
+	}
+
+	nanoid, err := gonanoid.New()
+	if err != nil {
+		return "", err
+	}
+	key := fmt.Sprintf("%s%s.%s", path, nanoid, imgType)
+	_, err2 := fs.kodo.UploadDataByForm(ctx, fs.conf.KodoBucket, key, file)
+	if err2 != nil {
+		return "", err
+	}
+	return key, nil
 }

@@ -233,6 +233,10 @@
     "v1FollowUserResponse": {
       "type": "object",
       "properties": {
+        "followedNum": {
+          "type": "string",
+          "format": "int64"
+        },
         "followedAt": {
           "type": "string",
           "format": "int64"
@@ -242,7 +246,7 @@
     "v1FollowedListResponse": {
       "type": "object",
       "properties": {
-        "users": {
+        "userItems": {
           "type": "array",
           "items": {
             "type": "object",
@@ -254,7 +258,7 @@
     "v1FollowingListResponse": {
       "type": "object",
       "properties": {
-        "users": {
+        "userItems": {
           "type": "array",
           "items": {
             "type": "object",
@@ -294,6 +298,10 @@
     "v1UnFollowUserResponse": {
       "type": "object",
       "properties": {
+        "followedNum": {
+          "type": "string",
+          "format": "int64"
+        },
         "now": {
           "type": "string",
           "format": "int64"
@@ -303,7 +311,7 @@
     "v1User": {
       "type": "object",
       "properties": {
-        "id": {
+        "userId": {
           "type": "string",
           "format": "int64"
         },
@@ -330,6 +338,14 @@
         },
         "isFollowed": {
           "type": "boolean"
+        },
+        "followingNum": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "followedNum": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     }

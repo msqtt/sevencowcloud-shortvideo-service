@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package user.v1;
+option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/user;pb_usr";
+
+import "user/user.proto";
+
+
+message GetUserProfileRequest {
+	int64 user_id = 1;
+}
+
+message GetUserProfileResponse {
+	UserItem user_item = 1;	
+}
