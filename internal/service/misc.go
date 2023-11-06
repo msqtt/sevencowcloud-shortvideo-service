@@ -50,7 +50,6 @@ func db2pbVideo(conf config.Config, video db.Video) *pb_vid.Video {
 	return &pb_vid.Video{
 		CoverLink: uriPath(conf.KodoLink, video.CoverLink),
 		SrcLink: uriPath(conf.KodoLink, video.SrcLink),
-		ContentHash: video.ContentHash,
 	}
 }
 

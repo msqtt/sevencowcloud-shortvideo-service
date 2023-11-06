@@ -109,10 +109,6 @@
                     "type": "integer",
                     "format": "int32"
                   }
-                },
-                "tagId": {
-                  "type": "string",
-                  "format": "int64"
                 }
               }
             }
@@ -273,9 +269,6 @@
           "type": "string"
         },
         "srcLink": {
-          "type": "string"
-        },
-        "contentHash": {
           "type": "string"
         }
       }

@@ -6,7 +6,6 @@ option go_package="github.com/msqtt/sevencowcloud-shortvideo-service/api/pb/v1/v
 message Video {
 	string cover_link = 1;
 	string src_link = 2;
-	string content_hash = 3;
 }
 
 message Tag {
