@@ -1,7 +1,7 @@
 # sevencowcloud-shortvideo-service
 2023年七牛云1024校园编程马拉松作品后端 🥺🥺
 
-使用 `golang grpc` + `http-gateway` 开发。
+使用 `golang grpc` + `http-gateway` + `sqlc` 开发。
 
 ## 运行方法
 
